@@ -1,0 +1,26 @@
+name: "Lint Python"
+
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: 3.11
+          cache: true
+      - name: Install dependencies
+        run: |
+          pdm sync
+      - name: Checking formatting with ruff
+        run: |
+          pdm run ruff format --diff $(git ls-files '*.py')
+      - name: Linting with ruff
+        run: |
+          pdm run ruff check --output-format=github --no-fix $(git ls-files '*.py')
+      - name: Checking typing with mypy
+        run: |
+          pdm run mypy --strict $(git ls-files '*.py')

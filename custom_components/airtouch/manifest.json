@@ -1,0 +1,20 @@
+{
+  "domain": "airtouch",
+  "name": "Polyaire AirTouch",
+  "codeowners": [
+    "@thenoctambulist"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/TheNoctambulist/hass-airtouch",
+  "integration_type": "hub",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/TheNoctambulist/hass-airtouch/issues",
+  "loggers": [
+    "custom_components.airtouch",
+    "pyairtouch"
+  ],
+  "requirements": [
+    "pyairtouch==0.1.0"
+  ],
+  "version": "0.1.0"
+}

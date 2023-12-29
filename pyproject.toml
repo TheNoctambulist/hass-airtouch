@@ -1,0 +1,56 @@
+[project]
+name = "hass-airtouch"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [{ name = "TheNoctambulist", email = "thenoctambulist@zoho.com" }]
+dependencies = ["homeassistant>=2023.12.4", "pyairtouch>=0.1.0"]
+requires-python = "==3.11.*"
+readme = "README.md"
+license = { text = "MIT" }
+
+
+[tool.pdm]
+package-type = "application"
+
+[tool.pdm.dev-dependencies]
+lint = ["mypy>=1.8.0", "ruff>=0.1.9"]
+dev = ["homeassistant-stubs>=2023.12.4"]
+
+[tool.ruff]
+select = ["ALL"] # We'll disable specific rules where appropriate.
+
+ignore = [
+    "ANN101", # Don't require typing for self
+    "ANN102", # Don't require typing for cls
+    "D102",   # This is not a public API
+    "D107",   # Don't require documentation for all __init__ functions
+    "D417",   # Don't force every argument to be documented
+    "EM101",  # raw-string-in-exception
+    "EM102",  # f-string-in-exception
+    "TD002",  # don't require authors for to dos
+    "TD003",  # don't require issues links for to dos
+    "TRY003", # Exception messages are useful.
+    "UP007",  # typing.Optional is useful. See https://github.com/astral-sh/ruff/issues/4858
+
+    # Compatibility/redundancy with Ruff Formatter
+    "W191",
+    "E111",
+    "E114",
+    "E117",
+    "D206",
+    "D300",
+    "Q000",
+    "Q001",
+    "Q002",
+    "Q003",
+    "COM812",
+    "COM819",
+    "ISC001",
+    "ISC002",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+strict = true
