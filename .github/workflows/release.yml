@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set version number
+        run: |
+          # Strip any "refs/tags/" prefix
+          version=$(basename "${{ github.REF }}")
+          # Strip the "v" prefix
+          version=${version#v}
+          sed -i "s/\"0.0.0\"/\"${version}\"/" custom_components/airtouch/manifest.json
+      - name: ZIP Release
+        uses: thedoctor0/zip-release@master
+        with:
+          directory: custom_components/airtouch
+          type: "zip"
+          filename: "../../hass-airtouch.zip"
+      - uses: ncipollo/release-action@v1
+        with:
+          name: "Release ${{ github.REF }}"
+          draft: true
+          artifacts: "hass-airtouch.zip"

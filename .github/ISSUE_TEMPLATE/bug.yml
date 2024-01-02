@@ -1,0 +1,46 @@
+---
+name: "Bug report"
+description: "Report a bug with the integration"
+labels: "bug"
+body:
+  - type: markdown
+    attributes:
+      value: Before you open a new issue, please search through the existing issues to see if others have had the same problem.
+  - type: textarea
+    attributes:
+      label: "System Health details"
+      description: "Paste the data from the System Health card in Home Assistant (https://www.home-assistant.io/more-info/system-health#github-issues)"
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: Checklist
+      options:
+        - label: I have enabled debug logging for the integration.
+          required: true
+        - label: This issue is not a duplicate issue of any [previous issues](https://github.com/thenoctambulist/hass-airtouch/issues?q=is%3Aissue+label%3A%22bug%22+)..
+          required: true
+  - type: textarea
+    attributes:
+      label: "Describe the issue"
+      description: "A clear and concise description of what the issue is."
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Reproduction steps
+      description: "Steps to reproduce the problem. Please describe the steps as clearly as possible."
+      value: |
+        1.
+        2.
+        3.
+        ...
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Debug logs"
+      description: "To collect debug logs refer to https://www.home-assistant.io/docs/configuration/troubleshooting/#debug-logs-and-diagnostics, you may want to restart Home Assistant after enabling debug logs to ensure all relevant information is included."
+      render: text
+    validations:
+      required: true
