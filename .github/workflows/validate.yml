@@ -1,6 +1,7 @@
 name: "Validate"
 
 on:
+  workflow_call:
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
@@ -35,3 +36,34 @@ jobs:
           category: "integration"
           # TODO: Remove "brands" once the brands images have been uploaded.
           ignore: "brands"
+
+  # Validates that the dependency version in the manifest.json matches the PDM lock file.
+  dependencies:
+      name: "Dependency Version Validation"
+      runs-on: "ubuntu-latest"
+      steps:
+        - name: "Checkout the repository"
+          uses: "actions/checkout@v4"
+        - name: Set up PDM
+          uses: pdm-project/setup-pdm@v3
+          with:
+            python-version: 3.11
+            cache: true
+        - name: "Read Versions"
+          run: |
+            echo "PDM_PYAIRTOUCH_VERSION=$(pdm list --freeze pyairtouch)" >> $GITHUB_ENV
+            echo 'MANIFEST_JSON<<EOF' >> $GITHUB_ENV
+            cat ./custom_components/airtouch/manifest.json >> $GITHUB_ENV
+            # Ensure a trailing new line since VSCode strips them by default.
+            echo '' >> $GITHUB_ENV
+            echo 'EOF' >> $GITHUB_ENV
+        - name: "Assert versions"
+          run: |
+            pdm_version=${PDM_PYAIRTOUCH_VERSION}
+            manifest_version=${{ fromJson(env.MANIFEST_JSON).requirements[0] }}
+            if [[ "${pdm_version}" != "${manifest_version}" ]]; then
+              echo "::error ./custom_components/airtouch/manifest.json::Version doesn't match PDM lock, must be ${pdm_version}"
+              exit 1
+            fi
+
+  
