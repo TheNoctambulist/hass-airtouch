@@ -34,8 +34,6 @@ jobs:
         uses: "hacs/action@main"
         with:
           category: "integration"
-          # TODO: Remove "brands" once the brands images have been uploaded.
-          ignore: "brands"
 
   # Validates that the dependency version in the manifest.json matches the PDM lock file.
   dependencies:
@@ -51,6 +49,9 @@ jobs:
             cache: true
         - name: "Read Versions"
           run: |
+            # Align dependencies with the lock file
+            pdm sync
+            # Read dependency versions
             echo "PDM_PYAIRTOUCH_VERSION=$(pdm list --freeze pyairtouch)" >> $GITHUB_ENV
             echo 'MANIFEST_JSON<<EOF' >> $GITHUB_ENV
             cat ./custom_components/airtouch/manifest.json >> $GITHUB_ENV
@@ -65,5 +66,3 @@ jobs:
               echo "::error ./custom_components/airtouch/manifest.json::Version doesn't match PDM lock, must be ${pdm_version}"
               exit 1
             fi
-
-  

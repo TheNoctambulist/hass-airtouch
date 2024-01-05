@@ -3,6 +3,8 @@ name: "Lint Python"
 on:
   workflow_call:
   push:
+    branches:
+      - "*"
 
 jobs:
   lint:
