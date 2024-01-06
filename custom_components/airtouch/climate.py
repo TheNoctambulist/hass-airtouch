@@ -190,13 +190,7 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
 
     @property
     def preset_mode(self) -> str:
-        match self._airtouch_ac.power_state:
-            case pyairtouch.AcPowerState.OFF_AWAY | pyairtouch.AcPowerState.ON_AWAY:
-                return climate.PRESET_AWAY
-            case pyairtouch.AcPowerState.SLEEP:
-                return climate.PRESET_SLEEP
-            case _:
-                return climate.PRESET_NONE
+        return _AC_POWER_STATE_TO_PRESET[self._airtouch_ac.power_state]
 
     async def async_set_fan_mode(self, fan_mode: str) -> None:
         await self._airtouch_ac.set_fan_speed(_CLIMATE_TO_AC_FAN_MODE[fan_mode])
