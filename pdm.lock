@@ -5,7 +5,7 @@
 groups = ["default", "lint", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:c41dfefd0706aeed514be63bc0834b9d445f808aee9f92011418bdfff5548f17"
+content_hash = "sha256:8150c844898bb0e18900c215f83daafc16bf5f316d86f5161aae2717074fc204"
 
 [[package]]
 name = "aiohttp"
@@ -633,7 +633,7 @@ files = [
 
 [[package]]
 name = "pyairtouch"
-version = "0.3.0"
+version = "0.3.1"
 requires_python = ">=3.10"
 summary = "A fully typed asyncio API for the Polyaire AirTouch AC controllers"
 groups = ["default"]
@@ -641,8 +641,8 @@ dependencies = [
     "typing-extensions>=4.9.0",
 ]
 files = [
-    {file = "pyairtouch-0.3.0-py3-none-any.whl", hash = "sha256:d48ba6d415205b691f471077f4eb058cac915211ae019c6e50e5978043a33b08"},
-    {file = "pyairtouch-0.3.0.tar.gz", hash = "sha256:19b6d63deac842d2d7500ee0dae8e2de7ce2c7dafdc2d450d0c6f204f1a7692f"},
+    {file = "pyairtouch-0.3.1-py3-none-any.whl", hash = "sha256:393d301bf63206362269f20595e41e5746215c6ed91ba3d877c376f38b5f019c"},
+    {file = "pyairtouch-0.3.1.tar.gz", hash = "sha256:c7a3e0217a75216574038833b24f6b85fd3953657313acf475f27788bb024d21"},
 ]
 
 [[package]]
