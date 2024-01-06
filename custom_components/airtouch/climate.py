@@ -279,15 +279,6 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         ]
 
     @property
-    def hvac_action(self) -> climate.HVACAction:
-        # The zone hvac mode follows the AC mode.
-        match self._airtouch_ac.power_state:
-            case pyairtouch.AcPowerState.OFF | pyairtouch.AcPowerState.OFF_AWAY:
-                return climate.HVACAction.OFF
-            case _:
-                return _AC_TO_CLIMATE_HVAC_ACTION[self._airtouch_ac.mode]
-
-    @property
     def current_temperature(self) -> Optional[float]:
         return self._airtouch_zone.current_temperature
 
@@ -310,6 +301,18 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
                 return climate.HVACMode.OFF
             case _:
                 return _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.mode]
+
+    @property
+    def hvac_action(self) -> climate.HVACAction:
+        if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
+            return climate.HVACAction.OFF
+
+        # If the zone is on the zone hvac action follows the AC mode.
+        match self._airtouch_ac.power_state:
+            case pyairtouch.AcPowerState.OFF | pyairtouch.AcPowerState.OFF_AWAY:
+                return climate.HVACAction.OFF
+            case _:
+                return _AC_TO_CLIMATE_HVAC_ACTION[self._airtouch_ac.mode]
 
     async def async_set_temperature(self, **kwargs: Any) -> None:  # noqa: ANN401
         temperature: float = kwargs[climate.ATTR_TEMPERATURE]
