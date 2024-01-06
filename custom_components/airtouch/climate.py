@@ -134,7 +134,7 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
         )
 
         self._attr_target_temperature_step = max(
-            airtouch_ac.set_point_resolution, _MIN_TARGET_TEMPERATURE_STEP
+            airtouch_ac.target_temperature_resolution, _MIN_TARGET_TEMPERATURE_STEP
         )
 
         # The Climate Entity groups the OFF Power State into the HVACMode
@@ -154,19 +154,19 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
 
     @property
     def current_temperature(self) -> Optional[float]:
-        return self._airtouch_ac.current_temp
+        return self._airtouch_ac.current_temperature
 
     @property
     def target_temperature(self) -> Optional[float]:
-        return self._airtouch_ac.set_point
+        return self._airtouch_ac.target_temperature
 
     @property
     def max_temp(self) -> float:
-        return self._airtouch_ac.max_set_point
+        return self._airtouch_ac.max_target_temperature
 
     @property
     def min_temp(self) -> float:
-        return self._airtouch_ac.min_set_point
+        return self._airtouch_ac.min_target_temperature
 
     @property
     def fan_mode(self) -> str:
@@ -218,7 +218,7 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
 
     async def async_set_temperature(self, **kwargs: Any) -> None:  # noqa: ANN401
         temperature: float = kwargs[climate.ATTR_TEMPERATURE]
-        await self._airtouch_ac.set_set_point(temperature)
+        await self._airtouch_ac.set_target_temperature(temperature)
 
 
 _ZONE_TO_CLIMATE_FAN_MODE = {
@@ -254,7 +254,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         self._airtouch_ac = airtouch_ac
 
         self._attr_target_temperature_step = max(
-            airtouch_zone.set_point_resolution, _MIN_TARGET_TEMPERATURE_STEP
+            airtouch_zone.target_temperature_resolution, _MIN_TARGET_TEMPERATURE_STEP
         )
 
         self._attr_fan_modes = [
@@ -289,11 +289,11 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
 
     @property
     def current_temperature(self) -> Optional[float]:
-        return self._airtouch_zone.current_temp
+        return self._airtouch_zone.current_temperature
 
     @property
     def target_temperature(self) -> Optional[float]:
-        return self._airtouch_zone.set_point
+        return self._airtouch_zone.target_temperature
 
     @property
     def fan_mode(self) -> str:
@@ -313,7 +313,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
 
     async def async_set_temperature(self, **kwargs: Any) -> None:  # noqa: ANN401
         temperature: float = kwargs[climate.ATTR_TEMPERATURE]
-        await self._airtouch_zone.set_set_point(temperature)
+        await self._airtouch_zone.set_target_temperature(temperature)
 
     async def async_set_fan_mode(self, fan_mode: str) -> None:
         await self._airtouch_zone.set_power(_CLIMATE_TO_ZONE_FAN_MODE[fan_mode])

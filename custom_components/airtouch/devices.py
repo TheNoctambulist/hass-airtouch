@@ -101,7 +101,7 @@ class AcDevice(BaseDevice):
             # ACs get a sequential identifier within an AirTouch system, so include
             # the airtouch unique ID as a prefix.
             unique_id=f"{airtouch_unique_id}_ac{airtouch_ac.ac_id}",
-            name=f"AC {airtouch_ac.ac_id}",
+            name=airtouch_ac.name,
             via_device=(DOMAIN, airtouch_unique_id),
         )
 
