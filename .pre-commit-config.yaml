@@ -1,0 +1,30 @@
+default_install_hook_types:
+  - pre-commit
+  - pre-merge-commit
+  - pre-push
+repos:
+  - repo: local
+    hooks:
+      - id: lint
+        name: Ruff Linting
+        language: system
+        entry: pdm run ruff check
+        files: '\.py$'
+      - id: type-check
+        name: MyPy Type Checking
+        language: system
+        entry: pdm run mypy
+        files: '\.py$'
+      - id: format-files
+        name: Ruff Formatting
+        language: system
+        entry: pdm run ruff format
+        files: '\.py$'
+        stages:
+          - pre-commit
+      - id: validate-manifest
+        name: Validating manifest
+        language: system
+        entry: pdm run validate-manifest
+        files: '^(pdm\.lock|manifest\.json)$'
+        pass_filenames: false

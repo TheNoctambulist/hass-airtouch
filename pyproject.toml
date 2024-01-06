@@ -13,8 +13,19 @@ license = { text = "MIT" }
 package-type = "application"
 
 [tool.pdm.dev-dependencies]
-lint = ["mypy>=1.8.0", "ruff>=0.1.9"]
-dev = ["homeassistant-stubs>=2023.12.4"]
+dev = [
+    "homeassistant-stubs>=2023.12.4",
+    "mypy>=1.8.0",
+    "ruff>=0.1.9",
+    "pre-commit>=3.6.0",
+]
+
+[tool.pdm.scripts]
+validate-manifest = { cmd = [
+    "scripts/validate-manifest.py",
+    "--manifest",
+    "custom_components/airtouch/manifest.json",
+] }
 
 [tool.ruff]
 select = ["ALL"] # We'll disable specific rules where appropriate.

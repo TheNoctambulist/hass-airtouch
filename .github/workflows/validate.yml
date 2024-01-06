@@ -47,22 +47,7 @@ jobs:
           with:
             python-version: 3.11
             cache: true
-        - name: "Read Versions"
-          run: |
-            # Align dependencies with the lock file
-            pdm sync
-            # Read dependency versions
-            echo "PDM_PYAIRTOUCH_VERSION=$(pdm list --freeze pyairtouch)" >> $GITHUB_ENV
-            echo 'MANIFEST_JSON<<EOF' >> $GITHUB_ENV
-            cat ./custom_components/airtouch/manifest.json >> $GITHUB_ENV
-            # Ensure a trailing new line since VSCode strips them by default.
-            echo '' >> $GITHUB_ENV
-            echo 'EOF' >> $GITHUB_ENV
         - name: "Assert versions"
           run: |
-            pdm_version=${PDM_PYAIRTOUCH_VERSION}
-            manifest_version=${{ fromJson(env.MANIFEST_JSON).requirements[0] }}
-            if [[ "${pdm_version}" != "${manifest_version}" ]]; then
-              echo "::error ./custom_components/airtouch/manifest.json::Version doesn't match PDM lock, must be ${pdm_version}"
-              exit 1
-            fi
+            pdm sync
+            pdm run validate-manifest
