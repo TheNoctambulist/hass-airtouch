@@ -132,7 +132,7 @@ class AirTouchDevice(BaseDevice):
             unique_id=airtouch.serial,
             name=airtouch.name,
             manufacturer=MANUFACTURER,
-            model=airtouch.version.value,
+            model=airtouch.model.value,
         )
 
     def ac_device(self, airtouch_ac: pyairtouch.AirConditioner) -> AcDevice:
