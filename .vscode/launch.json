@@ -1,0 +1,26 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: hass-airtouch",
+            "type": "python",
+            "request": "launch",
+            "module": "homeassistant",
+            "justMyCode": true,
+            "args": [
+                "--config",
+                "config/",
+                "--debug"
+            ],
+            "env": {
+                // Include the top-level custom_components on the python path so
+                // we don't need to symlink into the config directory.
+                "PYTHONPATH": "./custom_components"
+            },
+            "preLaunchTask": "Ensure Home Assistant Config"
+        }
+    ]
+}
