@@ -2,6 +2,7 @@
 
 
 import logging
+from collections.abc import Mapping
 from typing import Any, Optional
 
 import pyairtouch
@@ -281,6 +282,14 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         return self._airtouch_zone.target_temperature
 
     @property
+    def max_temp(self) -> float:
+        return self._airtouch_ac.max_target_temperature
+
+    @property
+    def min_temp(self) -> float:
+        return self._airtouch_ac.min_target_temperature
+
+    @property
     def fan_mode(self) -> str:
         return _ZONE_TO_CLIMATE_FAN_MODE[self._airtouch_zone.power_state]
 
@@ -308,6 +317,13 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
             case _:
                 return _AC_TO_CLIMATE_HVAC_ACTION[self._airtouch_ac.mode]
 
+    @property
+    def extra_state_attributes(self) -> Optional[Mapping[str, Any]]:
+        # Add the control method as an attribute so that this can be seen in
+        # Home Assistant. It's unlikely to change often but potentially useful
+        # for automations.
+        return {"control_method": self._airtouch_zone.control_method.name.lower()}
+
     async def async_set_temperature(self, **kwargs: Any) -> None:  # noqa: ANN401
         temperature: float = kwargs[climate.ATTR_TEMPERATURE]
         await self._airtouch_zone.set_target_temperature(temperature)
@@ -320,7 +336,16 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         power_state = pyairtouch.ZonePowerState.ON
         if hvac_mode == climate.HVACMode.OFF:
             power_state = pyairtouch.ZonePowerState.OFF
-        await self._airtouch_zone.set_power(power_state)
+
+        if self._airtouch_zone.power_state != power_state:
+            await self._airtouch_zone.set_power(power_state)
+        elif (
+            power_state == pyairtouch.ZonePowerState.ON
+            and self._airtouch_ac.power_state == pyairtouch.AcPowerState.OFF
+        ):
+            # If the zone is already on but the AC is off, then we actually need
+            # to turn the AC on to replicate the behaviour of the AirTouch app.
+            await self._airtouch_ac.set_power(pyairtouch.AcPowerControl.TURN_ON)
 
     async def _async_on_ac_update(self, _: int) -> None:
         # We only really need to trigger an update if the AC Mode or Power State
