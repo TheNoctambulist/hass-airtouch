@@ -8,6 +8,46 @@ from homeassistant.helpers.entity import Entity
 from . import devices
 
 
+class AirTouchConsoleEntity(Entity):
+    """A mix-in class for common AirTouch console entity logic.
+
+    Handles common logic including setting up subsriptions to AirTouch console changes.
+    """
+
+    # All entities have to provide a name
+    _attr_has_entity_name = True
+
+    # A subscription based entity
+    _attr_should_poll = False
+
+    def __init__(
+        self,
+        airtouch_device: devices.AirTouchDevice,
+        airtouch: pyairtouch.AirTouch,
+        id_suffix: str = "",
+    ) -> None:
+        self._airtouch = airtouch
+
+        self._attr_unique_id = airtouch_device.unique_id + id_suffix
+        self._attr_device_info = airtouch_device.device_info
+
+    async def async_added_to_hass(self) -> None:
+        self._airtouch.subscribe(self._async_on_airtouch_update)
+
+    async def async_will_remove_from_hass(self) -> None:
+        self._airtouch.unsubscribe(self._async_on_airtouch_update)
+
+    async def _async_on_airtouch_update(self, _: str) -> None:
+        self.schedule_update_ha_state()
+
+    def __repr__(self) -> str:
+        """Return a basic string representation of the entity."""
+        device_name: str = "<Unknown>"
+        if self._attr_device_info:
+            device_name = cast(str, self._attr_device_info.get("name", device_name))
+        return f"<{self.__class__.__name__}: {device_name} ({self._attr_unique_id})>"
+
+
 class AirTouchAcEntity(Entity):
     """A mix-in class for common AC entity logic.
 

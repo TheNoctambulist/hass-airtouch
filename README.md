@@ -174,6 +174,23 @@ You can disable or ignore all of the zone spill entities.
  `off` (`Closed`) | The AC is not using spill/bypass, or the zone is not active as a spill zone.
  `on` (`Open`)    | The AC is in spill/bypass, or the zone is being used as a spill zone.
 
+### :arrow_up: Update: Console (`update.<airtouch_name>_console`)
+An [**update**][hass-update] entity is created to represent the software update status of the AirTouch Console.
+
+The AirTouch API doesn't provide information about the version of any updates, so the `latest_version` attribute just uses a fixed string when an update is available.
+
+#### States
+ State  | Description
+--------|-------------
+ `off`  | The AirTouch software is up to date.
+ `on`   | An update is available for the AirTouch software.
+
+#### Attributes
+ Attribute           | Description
+---------------------|-------------
+ `installed_version` | The current version of the AirTouch software.
+ `latest_version`    | Matches `installed_version` if the software is update to date.<br>Value will be *"\<Update available>"* if an update is available.
+
 ## :yellow_heart: Say Thank You
 If you like this integration, please :star: the repository.
 
@@ -194,6 +211,7 @@ If you would like to make a donation as appreciation of my work:
 [hass-cover]: https://www.home-assistant.io/integrations/cover/
 [hass-customizing-entities]: https://www.home-assistant.io/docs/configuration/customizing-devices/
 [hass-sensor]: https://www.home-assistant.io/integrations/sensor/
+[hass-update]: https://www.home-assistant.io/integrations/update/
 [license-shield]: https://img.shields.io/github/license/thenoctambulist/hass-airtouch.svg
 [releases-shield]: https://img.shields.io/github/release/thenoctambulist/hass-airtouch.svg
 [releases]: https://github.com/thenoctambulist/hass-airtouch/releases
