@@ -1,5 +1,7 @@
 """Provides mix-ins for common entity logic."""
 
+from typing import cast
+
 import pyairtouch
 from homeassistant.helpers.entity import Entity
 
@@ -38,6 +40,13 @@ class AirTouchAcEntity(Entity):
     async def _async_on_ac_update(self, _: int) -> None:
         self.schedule_update_ha_state()
 
+    def __repr__(self) -> str:
+        """Return a basic string representation of the entity."""
+        device_name: str = "<Unknown>"
+        if self._attr_device_info:
+            device_name = cast(str, self._attr_device_info.get("name", device_name))
+        return f"<{self.__class__.__name__}: {device_name} ({self._attr_unique_id})>"
+
 
 class AirTouchZoneEntity(Entity):
     """A mix-in class for common zone entity logic.
@@ -70,3 +79,10 @@ class AirTouchZoneEntity(Entity):
 
     async def _async_on_zone_update(self, _: int) -> None:
         self.schedule_update_ha_state()
+
+    def __repr__(self) -> str:
+        """Return a basic string representation of the entity."""
+        device_name: str = "<Unknown>"
+        if self._attr_device_info:
+            device_name = cast(str, self._attr_device_info.get("name", device_name))
+        return f"<{self.__class__.__name__}: {device_name} ({self._attr_unique_id})>"

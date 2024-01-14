@@ -77,6 +77,10 @@ class ZoneDevice(BaseDevice):
             # ID.
             unique_id=f"{ac_unique_id}_zone{airtouch_zone.zone_id}",
             name=airtouch_zone.name,
+            # Assuming people name their zones and Home Assistant areas
+            # consistently, it makes sense to use the zone name as the suggested
+            # area for the device.
+            suggested_area=airtouch_zone.name,
             manufacturer=MANUFACTURER,
             via_device=(DOMAIN, ac_unique_id),
         )

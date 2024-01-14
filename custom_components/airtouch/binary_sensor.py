@@ -7,7 +7,7 @@ Binary sensors are used to represent:
 """
 
 import logging
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import pyairtouch
 from homeassistant.components import binary_sensor
@@ -18,6 +18,9 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import devices, entities
 from .const import DOMAIN
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -26,8 +29,10 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_devices: AddEntitiesCallback,
 ) -> None:
-    """Set up the AirTouch cover devices."""
-    api_objects = hass.data[DOMAIN][config_entry.entry_id]
+    """Set up the AirTouch binary sensors."""
+    api_objects: Sequence[pyairtouch.AirTouch] = hass.data[DOMAIN][
+        config_entry.entry_id
+    ]
 
     discovered_entities: list[binary_sensor.BinarySensorEntity] = []
 

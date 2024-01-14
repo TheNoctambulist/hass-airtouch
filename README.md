@@ -130,6 +130,28 @@ First add a thermostat card for the air-conditioner entity, then open the HVAC C
  --------|-|--------|-|--------
 ![](./images/thermostat-card-1.png) | ![][right-arrow]| ![](./images/thermostat-card-2.png) | ![][right-arrow] | ![](./images/thermostat-card-3.png)
 
+### :thermometer: Sensor: Temperature (`sensor.<name>_temperature`)
+A temperature [**sensor**][hass-sensor] is created for the main AC and each zone with a temperature sensor.
+Dedicated temperature sensors make it easy to use the current temperature in automations or view the temperature value over time in the Home Assistant history view.
+
+These entities can safely be disabled if you are not using them.
+
+#### States
+ State     | Description
+-----------|-------------
+ `<value>` | The current temperature value in °C
+
+### :large_blue_circle: Sensor: Damper Open Percentage (`sensor.<name>_damper_open_percentage`)
+A [**sensor**][hass-sensor] is created for the each zone to represent the current open percentage of the damper.
+A dedicated sensor entity makes it easy to display the current open percentage in entity cards or view the open perctengate over time in the Home Assistant history view.
+
+These entities can safely be disabled if you are not using them.
+
+#### States
+ State     | Description
+-----------|-------------
+ `<value>` | The current damper open percentage. Range 0-100%<br>The value will remain at the last damper position even if the zone is turned off.<br>The damper open percentage does not take into account spill.
+
 ### :battery: Binary Sensor: Battery (`binary_sensor.<zone_name>_battery`)
 A [**binary sensor**][hass-binary] is created for each zone with a temperature sensor to represent the battery state.
 
@@ -171,6 +193,7 @@ If you would like to make a donation as appreciation of my work:
 [hass-climate]: https://www.home-assistant.io/integrations/climate/
 [hass-cover]: https://www.home-assistant.io/integrations/cover/
 [hass-customizing-entities]: https://www.home-assistant.io/docs/configuration/customizing-devices/
+[hass-sensor]: https://www.home-assistant.io/integrations/sensor/
 [license-shield]: https://img.shields.io/github/license/thenoctambulist/hass-airtouch.svg
 [releases-shield]: https://img.shields.io/github/release/thenoctambulist/hass-airtouch.svg
 [releases]: https://github.com/thenoctambulist/hass-airtouch/releases
