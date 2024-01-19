@@ -14,7 +14,7 @@
     "pyairtouch"
   ],
   "requirements": [
-    "pyairtouch==0.5.1"
+    "pyairtouch==0.7.0"
   ],
   "version": "0.0.0"
 }
