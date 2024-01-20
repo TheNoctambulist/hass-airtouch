@@ -26,20 +26,28 @@ This integration can be added to Home Assistant as a [custom HACS repository](ht
 1. Select the category `Integration`.
 1. Click the ADD button.
 1. Restart Home Assistant
-1. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Polyaire AirTouch"
+1. Click the button below, or in the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Polyaire AirTouch"
+
+[![Add integration][my-hass-add-integration-img]][my-hass-add-integration]
 
 ### Manual
 1. Download the latest release from [here](https://github.com/thenoctambulist/hass-airtouch/releases).
 1. Create a folder called `custom_components` in the same directory as the Home Assistant `configuration.yaml`.
 1. Extract the contents of the zip into folder called `airtouch` inside `custom_components`.
 1. Restart Home Assistant
-1. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Polyaire AirTouch"
+1. Click the button below, or in the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Polyaire AirTouch"
+
+[![Add integration][my-hass-add-integration-img]][my-hass-add-integration]
 
 </details>
 
 ## :gear: Configuration
-No configuration is required.
-The integration will automatically discover any AirTouch systems on the network and integrate them into Home Assistant.
+Configuration of the integration is performed using a config flow in the user interface.
+Simply follow the steps shown on screen.
+
+Usually the integration will be able to automatically discover any AirTouch systems on the network and integrate them into Home Assistant.
+
+If your AirTouch system cannot be discovered automatically, the integration will prompt you to enter the host name or IP address of the AirTouch wall panel.
 
 <details>
 <summary>Have a firewall?</summary>
@@ -51,6 +59,9 @@ You will need to ensure your firewall allows traffic for these ports.
 -----------|-------
 AirTouch 4 | TCP: 9004, UDP: 49004
 AirTouch 5 | TCP: 9005, UDP: 49005
+
+For automatic discovery to work your network needs to support UDP broadcast.
+UDP broadcast may not work if you have installed Home Assistant in a Docker container using the bridge network.
 
 </details>
 
@@ -161,12 +172,11 @@ A [**binary sensor**][hass-binary] is created for each zone with a temperature s
  `off` (`Normal`) | The temperature sensor battery is healthy.
  `on` (`Low`)     | The battery in the temperature sensor is getting low and will need to be replaced soon.
 
-### :twisted_rightwards_arrows: Binary Sensor: Spill/Bypass (`binary_sensor.<ac/zone_name>_spill`)
-A [**binary sensor**][hass-binary] is created for each air-conditioner and each zone to represent the spill or bypass state.
+### :twisted_rightwards_arrows: Binary Sensor: Spill/Bypass (`binary_sensor.<ac/zone_name>_spill/bypass`)
+A [**binary sensor**][hass-binary] is created for each air-conditioner and each zone to represent the spill or bypass state according to the configuration selected when the integration was set up.
 
-It's not possible to identify systems that have been set-up with a bypass damper.
-If you system has a bypass damper installed, you can rename `binary_sensor.<ac_name>_spill` to `binary_sensor.<ac_name>_bypass` using the [Home Assistant UI][hass-customizing-entities].
-You can disable or ignore all of the zone spill entities.
+If your system has a bypass damper installed, only the `binary_sensor.<ac_name>_bypass` sensor for each air-conditioner will be created.
+If your system is set up to use one or more zones for spill, you will get a `binary_sensor.<ac_name>_spill` for each air-conditioner and a `binary_sensor.<zone_name>_spill` for each zone.
 
 #### States
  State            | Description 
@@ -213,5 +223,7 @@ If you would like to make a donation as appreciation of my work:
 [hass-sensor]: https://www.home-assistant.io/integrations/sensor/
 [hass-update]: https://www.home-assistant.io/integrations/update/
 [license-shield]: https://img.shields.io/github/license/thenoctambulist/hass-airtouch.svg
+[my-hass-add-integration-img]: https://my.home-assistant.io/badges/config_flow_start.svg
+[my-hass-add-integration]: https://my.home-assistant.io/redirect/config_flow_start/?domain=airtouch
 [releases-shield]: https://img.shields.io/github/release/thenoctambulist/hass-airtouch.svg
 [releases]: https://github.com/thenoctambulist/hass-airtouch/releases

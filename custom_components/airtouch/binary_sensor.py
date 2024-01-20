@@ -16,7 +16,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import devices, entities
-from .const import DOMAIN
+from .const import CONF_SPILL_BYPASS, DOMAIN, SpillBypass
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -34,13 +34,16 @@ async def async_setup_entry(
         config_entry.entry_id
     ]
 
+    spill_bypass: SpillBypass = config_entry.data.get(CONF_SPILL_BYPASS)
+
     discovered_entities: list[binary_sensor.BinarySensorEntity] = []
 
     for airtouch in api_objects:
         airtouch_device = devices.AirTouchDevice(hass, config_entry.entry_id, airtouch)
         for airtouch_ac in airtouch.air_conditioners:
             ac_device = airtouch_device.ac_device(airtouch_ac)
-            ac_spill_entity = AcSpillEntity(
+            ac_spill_entity = AcSpillBypassEntity(
+                spill_bypass=spill_bypass,
                 ac_device=ac_device,
                 airtouch_ac=airtouch_ac,
             )
@@ -48,11 +51,15 @@ async def async_setup_entry(
 
             for airtouch_zone in airtouch_ac.zones:
                 zone_device = ac_device.zone_device(airtouch_zone)
-                zone_spill_entity = ZoneSpillEntity(
-                    zone_device=zone_device,
-                    airtouch_zone=airtouch_zone,
-                )
-                discovered_entities.append(zone_spill_entity)
+
+                # Zone spill sensors are only useful if the system was not set
+                # up with a bypass damper.
+                if spill_bypass == SpillBypass.SPILL:
+                    zone_spill_entity = ZoneSpillEntity(
+                        zone_device=zone_device,
+                        airtouch_zone=airtouch_zone,
+                    )
+                    discovered_entities.append(zone_spill_entity)
 
                 if airtouch_zone.has_temp_sensor:
                     zone_battery_entity = ZoneBatteryEntity(
@@ -65,20 +72,23 @@ async def async_setup_entry(
     async_add_devices(discovered_entities)
 
 
-class AcSpillEntity(entities.AirTouchAcEntity, binary_sensor.BinarySensorEntity):
+class AcSpillBypassEntity(entities.AirTouchAcEntity, binary_sensor.BinarySensorEntity):
     """Binary sensor reporting the spill/bypass state of an air-conditioner."""
 
-    _attr_name = "Spill"
     _attr_device_class = binary_sensor.BinarySensorDeviceClass.OPENING
 
     def __init__(
-        self, ac_device: devices.AcDevice, airtouch_ac: pyairtouch.AirConditioner
+        self,
+        spill_bypass: SpillBypass,
+        ac_device: devices.AcDevice,
+        airtouch_ac: pyairtouch.AirConditioner,
     ) -> None:
         super().__init__(
             ac_device=ac_device,
             airtouch_ac=airtouch_ac,
-            id_suffix="_spill",
+            id_suffix="_bypass" if spill_bypass == SpillBypass.BYPASS else "_spill",
         )
+        self._attr_name = "Bypass" if spill_bypass == SpillBypass.BYPASS else "Spill"
 
     @property
     def is_on(self) -> Optional[bool]:

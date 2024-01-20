@@ -1,13 +1,34 @@
 {
   "config": {
     "step": {
-      "confirm": {
-        "description": "[%key:common::config_flow::description::confirm_setup%]"
+      "user_host": {
+        "title": "Set up the AirTouch connection details",
+        "description": "Enter the host name or IP Address of the AirTouch wall panel.",
+        "data": {
+          "host": "[%key:common::config_flow::data::host%]"
+        }
+      },
+      "spill_bypass": {
+        "title": "Spill/Bypass Configuration",
+        "description": "Select whether your system has been installed with a bypass damper or uses spill zone(s).\nIf you are unsure leave the value unchanged.",
+        "data": {
+          "spill_bypass": "Spill/Bypass"
+        }
       }
     },
     "abort": {
-      "single_instance_allowed": "[%key:common::config_flow::abort::single_instance_allowed%]",
-      "no_devices_found": "[%key:common::config_flow::abort::no_devices_found%]"
+      "single_instance_allowed": "[%key:common::config_flow::abort::single_instance_allowed%]"
+    },
+    "error": {
+      "no_devices_found": "Couldn't connect to AirTouch console. Check the address and try again."
+    }
+  },
+  "selector": {
+    "spill_bypass": {
+      "options": {
+        "spill": "Spill",
+        "bypass": "Bypass"
+      }
     }
   }
 }
