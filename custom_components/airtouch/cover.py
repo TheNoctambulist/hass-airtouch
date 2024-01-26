@@ -18,6 +18,12 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
+# The AirTouch console doesn't seem to perform any checks for a Damper
+# Increase command if the current percentage is >95% which can result in
+# an open percentage >100%!
+# To avoid this, we jump to the nearest 5%.
+_DAMPER_STEP = 5
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -70,6 +76,8 @@ class ZoneDamperEntity(entities.AirTouchZoneEntity, cover.CoverEntity):
 
     @property
     def current_cover_position(self) -> int:
+        if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
+            return 0
         return self._airtouch_zone.current_damper_percentage
 
     @property
@@ -86,4 +94,5 @@ class ZoneDamperEntity(entities.AirTouchZoneEntity, cover.CoverEntity):
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:  # noqa: ANN401
         open_percentage: int = kwargs[cover.ATTR_POSITION]
+        open_percentage = _DAMPER_STEP * round(open_percentage / _DAMPER_STEP)
         await self._airtouch_zone.set_damper_percentage(open_percentage)

@@ -121,6 +121,8 @@ The cover entity for zones can be used to:
 - turn the zone on or off
 - change the damper percentage (not recommended for zones with temperature sensors!)
 
+The damper percentage can only be changed in increments of 5% to align with the official app.
+
 #### States
  State    | Description 
 ----------|-------------
@@ -161,7 +163,7 @@ These entities can safely be disabled if you are not using them.
 #### States
  State     | Description
 -----------|-------------
- `<value>` | The current damper open percentage. Range 0-100%<br>The value will remain at the last damper position even if the zone is turned off.<br>The damper open percentage does not take into account spill.
+ `<value>` | The current damper open percentage. Range 0-100%<br>The damper open percentage does not take into account spill.
 
 ### :battery: Binary Sensor: Battery (`binary_sensor.<zone_name>_battery`)
 A [**binary sensor**][hass-binary] is created for each zone with a temperature sensor to represent the battery state.

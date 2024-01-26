@@ -128,4 +128,8 @@ class ZonePercentageEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
 
     @property
     def native_value(self) -> int:
+        if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
+            # Force the value to zero when the zone is turned off to have a more
+            # accurate record of zone damper percentage history.
+            return 0
         return self._airtouch_zone.current_damper_percentage
