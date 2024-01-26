@@ -34,6 +34,13 @@ PLATFORMS: list[Platform] = [
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the Polyaire AirTouch connection after discovery."""
+    _LOGGER.debug(
+        "ConfigEntry (v%d.%d): %s",
+        entry.version,
+        entry.minor_version,
+        entry.data,
+    )
+
     hass.data.setdefault(DOMAIN, {})
 
     discovery_results = await pyairtouch.discover(remote_host=entry.data.get(CONF_HOST))

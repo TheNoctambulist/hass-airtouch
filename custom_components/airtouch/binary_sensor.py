@@ -34,7 +34,10 @@ async def async_setup_entry(
         config_entry.entry_id
     ]
 
-    spill_bypass: SpillBypass = config_entry.data.get(CONF_SPILL_BYPASS)
+    # When reading serialised configuration, the config data will be the
+    # underlying value not the enum value so it needs to be converted to an enum
+    # literal for future comparisons.
+    spill_bypass = SpillBypass(config_entry.data.get(CONF_SPILL_BYPASS))
 
     discovered_entities: list[binary_sensor.BinarySensorEntity] = []
 
@@ -42,12 +45,18 @@ async def async_setup_entry(
         airtouch_device = devices.AirTouchDevice(hass, config_entry.entry_id, airtouch)
         for airtouch_ac in airtouch.air_conditioners:
             ac_device = airtouch_device.ac_device(airtouch_ac)
-            ac_spill_entity = AcSpillBypassEntity(
-                spill_bypass=spill_bypass,
-                ac_device=ac_device,
-                airtouch_ac=airtouch_ac,
-            )
-            discovered_entities.append(ac_spill_entity)
+
+            if (
+                spill_bypass == SpillBypass.SPILL
+                # AirTouch 4 doesn't report bypass status, so don't create a sensor.
+                or airtouch.model != pyairtouch.AirTouchModel.AIRTOUCH_4
+            ):
+                ac_spill_entity = AcSpillBypassEntity(
+                    spill_bypass=spill_bypass,
+                    ac_device=ac_device,
+                    airtouch_ac=airtouch_ac,
+                )
+                discovered_entities.append(ac_spill_entity)
 
             for airtouch_zone in airtouch_ac.zones:
                 zone_device = ac_device.zone_device(airtouch_zone)

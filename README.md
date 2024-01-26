@@ -178,6 +178,8 @@ A [**binary sensor**][hass-binary] is created for each air-conditioner and each 
 If your system has a bypass damper installed, only the `binary_sensor.<ac_name>_bypass` sensor for each air-conditioner will be created.
 If your system is set up to use one or more zones for spill, you will get a `binary_sensor.<ac_name>_spill` for each air-conditioner and a `binary_sensor.<zone_name>_spill` for each zone.
 
+Note: The bypass sensor is only created for the AirTouch 5. Bypass state is not available in the AirTouch 4 API.
+
 #### States
  State            | Description 
 ------------------|-------------
