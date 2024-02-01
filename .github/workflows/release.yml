@@ -25,14 +25,19 @@ jobs:
           # Strip the "v" prefix
           version=${version#v}
           sed -i "s/\"0.0.0\"/\"${version}\"/" custom_components/airtouch/manifest.json
+      - name: Read filename
+        id: read_filename
+        run: |
+          filename=$(jq .filename hacs.json -r)
+          echo "::set-output name=filename::${filename}"
       - name: ZIP Release
         uses: thedoctor0/zip-release@master
         with:
           directory: custom_components/airtouch
           type: "zip"
-          filename: "../../hass-airtouch.zip"
+          filename: "../../${{ steps.read_filename.outputs.filename }}"
       - uses: ncipollo/release-action@v1
         with:
           name: "Release ${{ github.REF_NAME }}"
           draft: true
-          artifacts: "hass-airtouch.zip"
+          artifacts: "${{ steps.read_filename.outputs.filename }}"
