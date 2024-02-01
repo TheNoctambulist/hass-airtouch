@@ -37,7 +37,9 @@ async def async_setup_entry(
     # When reading serialised configuration, the config data will be the
     # underlying value not the enum value so it needs to be converted to an enum
     # literal for future comparisons.
-    spill_bypass = SpillBypass(config_entry.data.get(CONF_SPILL_BYPASS))
+    spill_bypass = SpillBypass(
+        config_entry.data.get(CONF_SPILL_BYPASS, SpillBypass.SPILL)
+    )
 
     discovered_entities: list[binary_sensor.BinarySensorEntity] = []
 
