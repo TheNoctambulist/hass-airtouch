@@ -36,8 +36,7 @@ jobs:
           directory: custom_components/airtouch
           type: "zip"
           filename: "../../${{ steps.read_filename.outputs.filename }}"
-      - uses: ncipollo/release-action@v1
+      - uses: ghalactic/github-release-from-tag@v5
         with:
-          name: "Release ${{ github.REF_NAME }}"
-          draft: true
-          artifacts: "${{ steps.read_filename.outputs.filename }}"
+          assets: |
+            - path: "${{ steps.read_filename.outputs.filename }}"
