@@ -1,7 +1,8 @@
 ---
 name: "Bug report"
 description: "Report a bug with the integration"
-labels: "bug"
+labels:
+  - "bug"
 body:
   - type: markdown
     attributes:
@@ -40,7 +41,7 @@ body:
   - type: textarea
     attributes:
       label: "Debug logs"
-      description: "To collect debug logs refer to https://www.home-assistant.io/docs/configuration/troubleshooting/#debug-logs-and-diagnostics, you may want to restart Home Assistant after enabling debug logs to ensure all relevant information is included."
-      render: text
+      description: "To collect debug logs refer to https://www.home-assistant.io/docs/configuration/troubleshooting/#debug-logs-and-diagnostics.\nDebug logs can be turned on from the integration page via https://my.home-assistant.io/redirect/integration/?domain=airtouch (even if adding the integration failed).\nPlease restart Home Assistant or remove and re-add the AirTouch after enabling debug logs to ensure all relevant information is included."
+      render: Text
     validations:
       required: true
