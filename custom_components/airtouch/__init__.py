@@ -37,7 +37,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.debug(
         "ConfigEntry (v%d.%d): %s",
         entry.version,
-        entry.minor_version,
+        getattr(entry, "minor_version", 0),  # For Home Assistant <2024.1
         entry.data,
     )
 
@@ -81,18 +81,21 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Migrate previous versions of configuration."""
+    entry_version = entry.version
+    # Use getattr for backwards compatibility before Home Assistant 2024.1
+    entry_minor_version = getattr(entry, "minor_version", 0)
     _LOGGER.debug(
         "Migrating config from schema v%s.%s",
-        entry.version,
-        entry.minor_version,
+        entry_version,
+        entry_minor_version,
     )
 
-    if entry.version > 1:
+    if entry_version > 1:
         # The user has downgraded from a future version
         _LOGGER.error(
             "Failed config downgrade from v%s.%s to v%s.%s",
-            entry.version,
-            entry.minor_version,
+            entry_version,
+            entry_minor_version,
             CONF_VERSION,
             CONF_MINOR_VERSION,
         )
@@ -102,20 +105,21 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # appropriate config version.
     config_data = {**entry.data}
 
-    if entry.version == 1:  # noqa: SIM102
-        if entry.minor_version < 2:  # noqa: PLR2004
+    if entry_version == 1:  # noqa: SIM102
+        if entry_minor_version < 2:  # noqa: PLR2004
             # Prior to v1.2, only broadcast discovery was supported
-            config_data[CONF_HOST] = None
+            config_data.setdefault(CONF_HOST, None)
             # Prior to v1.2 the integration always created zone spill entities
-            config_data[CONF_SPILL_BYPASS] = SpillBypass.SPILL
+            config_data.setdefault(CONF_SPILL_BYPASS, SpillBypass.SPILL)
 
     entry.version = CONF_VERSION
-    entry.minor_version = CONF_MINOR_VERSION
+    if hasattr(entry, "minor_version"):
+        entry.minor_version = CONF_MINOR_VERSION
     hass.config_entries.async_update_entry(entry, data=config_data)
 
     _LOGGER.debug(
         "Successfully migrated config to schema v%s.%s",
-        entry.version,
-        entry.minor_version,
+        CONF_VERSION,
+        CONF_MINOR_VERSION,
     )
     return True
