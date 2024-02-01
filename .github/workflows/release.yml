@@ -29,7 +29,7 @@ jobs:
         id: read_filename
         run: |
           filename=$(jq .filename hacs.json -r)
-          echo "::set-output name=filename::${filename}"
+          echo "filename=${filename}" >> $GITHUB_OUTPUT
       - name: ZIP Release
         uses: thedoctor0/zip-release@master
         with:
