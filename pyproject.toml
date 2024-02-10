@@ -28,7 +28,7 @@ validate-manifest = { cmd = [
     "custom_components/airtouch/manifest.json",
 ] }
 
-[tool.ruff]
+[tool.ruff.lint]
 select = ["ALL"] # We'll disable specific rules where appropriate.
 
 ignore = [
