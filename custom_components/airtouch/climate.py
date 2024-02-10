@@ -244,10 +244,6 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
     _attr_translation_key = "zone_climate"
 
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
-    _attr_supported_features = (
-        climate.ClimateEntityFeature.FAN_MODE
-        | climate.ClimateEntityFeature.TARGET_TEMPERATURE
-    )
 
     def __init__(
         self,
@@ -260,6 +256,20 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
             airtouch_zone=airtouch_zone,
         )
         self._airtouch_ac = airtouch_ac
+
+        self._attr_supported_features = (
+            climate.ClimateEntityFeature.FAN_MODE
+            | climate.ClimateEntityFeature.TARGET_TEMPERATURE
+        )
+        if hasattr(climate.ClimateEntityFeature, "TURN_OFF"):
+            # HomeAssistant 2024.2 onwards
+            # TURN_OFF and TURN_ON are implicitly supported because we support
+            # HVAC Modes.
+            self._attr_supported_features |= (
+                climate.ClimateEntityFeature.TURN_OFF
+                | climate.ClimateEntityFeature.TURN_ON
+            )
+            self._enable_turn_on_off_backwards_compatibility = False
 
         self._attr_target_temperature_step = max(
             airtouch_zone.target_temperature_resolution, _MIN_TARGET_TEMPERATURE_STEP
