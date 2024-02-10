@@ -116,6 +116,8 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
     """A climate entity for an AirTouch Air Conditioner."""
 
     _attr_name = None  # Name comes from the device info
+    _attr_translation_key = "ac_climate"
+
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
     def __init__(
@@ -239,6 +241,8 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
     """A climate entity for an AirTouch Zone."""
 
     _attr_name = None  # Name comes from the device info
+    _attr_translation_key = "zone_climate"
+
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_supported_features = (
         climate.ClimateEntityFeature.FAN_MODE

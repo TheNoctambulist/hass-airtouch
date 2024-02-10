@@ -1,34 +1,59 @@
 {
-    "config": {
-        "abort": {
-            "single_instance_allowed": "Already configured. Only a single configuration possible."
-        },
-        "error": {
-            "no_devices_found": "Failed to connect to AirTouch console. Check the address and try again."
-        },
-        "step": {
-            "spill_bypass": {
-                "data": {
-                    "spill_bypass": "Spill/Bypass"
-                },
-                "description": "Select whether your system has been installed with a bypass damper or uses spill zone(s).\nIf you are unsure leave the value unchanged.",
-                "title": "Spill/Bypass Configuration"
-            },
-            "user_host": {
-                "data": {
-                    "host": "Host"
-                },
-                "description": "Enter the host name or IP Address of the AirTouch wall panel.",
-                "title": "Set up the AirTouch connection details"
-            }
-        }
+  "config": {
+    "abort": {
+      "single_instance_allowed": "Already configured. Only a single configuration possible."
     },
-    "selector": {
-        "spill_bypass": {
-            "options": {
-                "bypass": "Bypass",
-                "spill": "Spill"
-            }
-        }
+    "error": {
+      "no_devices_found": "Failed to connect to AirTouch console. Check the address and try again."
+    },
+    "step": {
+      "spill_bypass": {
+        "data": {
+          "spill_bypass": "Spill/Bypass"
+        },
+        "description": "Select whether your system has been installed with a bypass damper or uses spill zone(s).\nIf you are unsure leave the value unchanged.",
+        "title": "Spill/Bypass Configuration"
+      },
+      "user_host": {
+        "data": {
+          "host": "Host"
+        },
+        "description": "Enter the host name or IP Address of the AirTouch wall panel.",
+        "title": "Set up the AirTouch connection details"
+      }
     }
+  },
+  "selector": {
+    "spill_bypass": {
+      "options": {
+        "bypass": "Bypass",
+        "spill": "Spill"
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "ac_climate": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "quiet": "Quiet",
+              "powerful": "Powerful",
+              "turbo": "Turbo",
+              "intelligent": "Intelligent Auto"
+            }
+          }
+        }
+      },
+      "zone_climate": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "turbo": "Turbo"
+            }
+          }
+        }
+      }
+    }
+  }
 }

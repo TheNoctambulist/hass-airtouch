@@ -30,5 +30,30 @@
         "bypass": "Bypass"
       }
     }
+  },
+  "entity": {
+    "climate": {
+      "ac_climate": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "quiet": "Quiet",
+              "powerful": "Powerful",
+              "turbo": "Turbo",
+              "intelligent": "Intelligent Auto"
+            }
+          }
+        }
+      },
+      "zone_climate": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "turbo": "Turbo"
+            }
+          }
+        }
+      }
+    }
   }
 }

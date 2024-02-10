@@ -1,0 +1,27 @@
+{
+  "entity": {
+    "climate": {
+      "ac_climate": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "quiet": "mdi:fan",
+              "powerful": "mdi:fan-chevron-up",
+              "turbo": "mdi:fan-plus",
+              "intelligent": "mdi:fan-auto"
+            }
+          }
+        }
+      },
+      "zone_climate": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "turbo": "mdi:fan-plus"
+            }
+          }
+        }
+      }
+    }
+  }
+}
