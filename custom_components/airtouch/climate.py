@@ -133,6 +133,15 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
             | climate.ClimateEntityFeature.TARGET_TEMPERATURE
             | climate.ClimateEntityFeature.PRESET_MODE
         )
+        if hasattr(climate.ClimateEntityFeature, "TURN_OFF"):
+            # HomeAssistant 2024.2 onwards
+            # TURN_OFF and TURN_ON are implicitly supported because we support
+            # HVAC Modes.
+            self._attr_supported_features |= (
+                climate.ClimateEntityFeature.TURN_OFF
+                | climate.ClimateEntityFeature.TURN_ON
+            )
+            self._enable_turn_on_off_backwards_compatibility = False
 
         self._attr_target_temperature_step = max(
             airtouch_ac.target_temperature_resolution, _MIN_TARGET_TEMPERATURE_STEP
