@@ -137,8 +137,6 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
         )
         if hasattr(climate.ClimateEntityFeature, "TURN_OFF"):
             # HomeAssistant 2024.2 onwards
-            # TURN_OFF and TURN_ON are implicitly supported because we support
-            # HVAC Modes.
             self._attr_supported_features |= (
                 climate.ClimateEntityFeature.TURN_OFF
                 | climate.ClimateEntityFeature.TURN_ON
@@ -215,6 +213,13 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
                 _CLIMATE_TO_AC_HVAC_MODE[hvac_mode], power_on=True
             )
 
+    async def async_turn_on(self) -> None:
+        # Turn the AC on in the last used mode.
+        await self._airtouch_ac.set_power(pyairtouch.AcPowerControl.TURN_ON)
+
+    async def async_turn_off(self) -> None:
+        await self._airtouch_ac.set_power(pyairtouch.AcPowerControl.TURN_OFF)
+
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         power_control = _CLIMATE_PRESET_TO_AC_POWER_CONTROL.get(preset_mode)
         if power_control:
@@ -263,8 +268,6 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         )
         if hasattr(climate.ClimateEntityFeature, "TURN_OFF"):
             # HomeAssistant 2024.2 onwards
-            # TURN_OFF and TURN_ON are implicitly supported because we support
-            # HVAC Modes.
             self._attr_supported_features |= (
                 climate.ClimateEntityFeature.TURN_OFF
                 | climate.ClimateEntityFeature.TURN_ON
@@ -369,6 +372,21 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
             # If the zone is already on but the AC is off, then we actually need
             # to turn the AC on to replicate the behaviour of the AirTouch app.
             await self._airtouch_ac.set_power(pyairtouch.AcPowerControl.TURN_ON)
+
+    async def async_turn_on(self) -> None:
+        # If the zone is already on but the AC is off, then we actually need to
+        # turn on the AC.
+        if (
+            self._airtouch_zone.power_state == pyairtouch.ZonePowerState.ON
+            and self._airtouch_ac.power_state == pyairtouch.AcPowerState.OFF
+        ):
+            await self._airtouch_ac.set_power(pyairtouch.AcPowerControl.TURN_ON)
+        else:
+            # Otherwise just turn on the zone
+            await self._airtouch_zone.set_power(pyairtouch.ZonePowerState.ON)
+
+    async def async_turn_off(self) -> None:
+        await self._airtouch_zone.set_power(pyairtouch.ZonePowerState.OFF)
 
     async def _async_on_ac_update(self, _: int) -> None:
         # We only really need to trigger an update if the AC Mode or Power State
