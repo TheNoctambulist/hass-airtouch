@@ -6,10 +6,12 @@ from collections.abc import Mapping
 from typing import Any, Optional
 
 import pyairtouch
+import voluptuous
 from homeassistant.components import climate
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import devices, entities
@@ -56,6 +58,17 @@ async def async_setup_entry(
     _LOGGER.debug("Found entities %s", discovered_entities)
 
     async_add_devices(discovered_entities)
+
+    platform = entity_platform.async_get_current_platform()
+    platform.async_register_entity_service(
+        name="set_hvac_mode_only",
+        schema={
+            voluptuous.Required(climate.ATTR_HVAC_MODE): voluptuous.Coerce(
+                climate.HVACMode
+            )
+        },
+        func="async_set_hvac_mode_only",
+    )
 
 
 _AC_POWER_STATE_TO_PRESET = {
@@ -117,6 +130,11 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
 
     _attr_name = None  # Name comes from the device info
     _attr_translation_key = "ac_climate"
+
+    # Device Class is not officially supported for climate entities, but this is
+    # useful to differentiate the AC and zone climate entities for selectors
+    # (e.g. in services.yaml)
+    _attr_device_class = "ac"
 
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
@@ -202,6 +220,14 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
     def preset_mode(self) -> str:
         return _AC_POWER_STATE_TO_PRESET[self._airtouch_ac.power_state]
 
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return AC specific state attributes."""
+        return {
+            # The "current" HVAC mode
+            "last_active_hvac_mode": _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.mode]
+        }
+
     async def async_set_fan_mode(self, fan_mode: str) -> None:
         await self._airtouch_ac.set_fan_speed(_CLIMATE_TO_AC_FAN_MODE[fan_mode])
 
@@ -231,6 +257,17 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
         temperature: float = kwargs[climate.ATTR_TEMPERATURE]
         await self._airtouch_ac.set_target_temperature(temperature)
 
+    async def async_set_hvac_mode_only(self, hvac_mode: climate.HVACMode) -> None:
+        """Set the HVAC mode without powering on.
+
+        A custom service call that sets the HVAC Mode only without changing the
+        current power state. If the AC is currently turned off it will remain
+        off. If it is currently on it will remain on.
+        """
+        if hvac_mode not in _CLIMATE_TO_AC_HVAC_MODE:
+            raise ValueError("Unsupported HVAC Mode")
+        await self._airtouch_ac.set_mode(_CLIMATE_TO_AC_HVAC_MODE[hvac_mode])
+
 
 _ZONE_TO_CLIMATE_FAN_MODE = {
     pyairtouch.ZonePowerState.OFF: climate.FAN_OFF,
@@ -247,6 +284,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
 
     _attr_name = None  # Name comes from the device info
     _attr_translation_key = "zone_climate"
+    _attr_device_class = "zone"
 
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
 

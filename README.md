@@ -66,9 +66,12 @@ UDP broadcast may not work if you have installed Home Assistant in a Docker cont
 </details>
 
 ## :bulb: Usage
-This integration adds several entities depending on the capabilities of your AirTouch system.
+This integration provides several entities depending on the capabilities of your AirTouch system.
+A custom service is provided to allow changing the HVAC mode without changing the current power state of the air-conditioner.
 
-### :snowflake: Climate: Air Conditioner (`climate.<ac_name>`)
+The entities and services are described in the following sections.
+
+### :snowflake: Climate: Air-Conditioner (`climate.<ac_name>`)
 
 For each air-conditioner in the AirTouch system a [**climate**][hass-climate] entity is created.
 
@@ -83,12 +86,13 @@ Use this entity to control the overall state of the system such as the Heating/C
  `<ac_mode>` | Changing the AC mode to one of the on modes will automatically turn the AC and any `on` zones on in the selected mode.
 
 #### Attributes
- Attribute     | Description 
----------------|-------------
- `hvac_modes`  | The available HVAC Modes for the AC.
- `fan_modes`   | The set of fan modes supported by the AC.
- `fan_mode`    | The current fan mode of the AC. It will remain in the last set fan mode even when the AC is turned off.<br>Changing the fan mode will not turn the AC on if it is currently off.
- `temperature` | The target temperature for the AC.<br>*Note*: If you have zones with temperature controllers, changing the target temperature will have no effect.
+ Attribute               | Description 
+-------------------------|-------------
+ `hvac_modes`            | The available HVAC Modes for the AC.
+ `fan_modes`             | The set of fan modes supported by the AC.
+ `fan_mode`              | The current fan mode of the AC. It will remain in the last set fan mode even when the AC is turned off.<br>Changing the fan mode will not turn the AC on if it is currently off.
+ `last_active_hvac_mode` | The last active HVAC mode.<br>While the AC is turned on this will match the current state. While the AC is turned off the attribute indicates the mode that will become active if the `climate.turn_on` service is called.
+ `temperature`           | The target temperature for the AC.<br>*Note*: If you have zones with temperature controllers, changing the target temperature will have no effect.
 
 ### :snowflake: Climate: Zone (`climate.<zone_name>`)
 If you have any zones set up with a temperature sensor, a separate [**climate**][hass-climate] entity will be created for each zone.
@@ -204,6 +208,29 @@ The AirTouch API doesn't provide information about the version of any updates, s
 ---------------------|-------------
  `installed_version` | The current version of the AirTouch software.
  `latest_version`    | Matches `installed_version` if the software is update to date.<br>Value will be *"\<Update available>"* if an update is available.
+
+### :snowflake: Polyaire AirTouch: Set HVAC Mode (`airtouch.set_hvac_mode_only`)
+A service that sets the HVAC mode without changing the current power state.
+
+This service can be used to change the mode of an air-conditioner while it is turned off without causing it to be turned on.
+It may be useful for time based automations.
+
+If the air-conditioner is turned off, the current HVAC mode can be seen in the [`last_active_hvac_mode`](#snowflake-climate-air-conditioner-climateac_name) attribute of the climate entity. 
+
+#### Fields
+ Field       | Description
+-------------|-------------
+ `target`    | An AirTouch air-conditioner climate entity.
+ `hvac_mode` | The desired mode for the AirTouch air-conditioner.
+
+#### Example
+```yaml
+service: airtouch.set_hvac_mode_only
+data:
+  hvac_mode: cool
+target:
+  entity_id: climate.panasonic
+```
 
 ## :yellow_heart: Say Thank You
 If you like this integration, please :star: the repository.

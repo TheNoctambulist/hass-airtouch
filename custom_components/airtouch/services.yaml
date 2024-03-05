@@ -1,0 +1,19 @@
+# Describes the format for available airtouch services
+set_hvac_mode_only:
+  target:
+    entity:
+      integration: airtouch
+      domain: climate
+      device_class: ac # Not supported for zones
+  fields:
+    hvac_mode:
+      required: true
+      selector:
+        select:
+          options:
+            - "cool"
+            - "dry"
+            - "fan_only"
+            - "heat_cool"
+            - "heat"
+          translation_key: hvac_mode

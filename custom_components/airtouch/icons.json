@@ -23,5 +23,8 @@
         }
       }
     }
+  },
+  "services": {
+    "set_hvac_mode_only": "mdi:thermostat"
   }
 }

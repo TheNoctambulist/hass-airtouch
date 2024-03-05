@@ -24,6 +24,15 @@
     }
   },
   "selector": {
+    "hvac_mode": {
+      "options": {
+        "cool": "Cool",
+        "dry": "Dry",
+        "fan_only": "Fan only",
+        "heat_cool": "Heat/cool",
+        "heat": "Heat"
+      }
+    },
     "spill_bypass": {
       "options": {
         "spill": "Spill",
@@ -52,6 +61,18 @@
               "turbo": "Turbo"
             }
           }
+        }
+      }
+    }
+  },
+  "services": {
+    "set_hvac_mode_only": {
+      "name": "Set HVAC mode",
+      "description": "Sets HVAC mode without changing the current power state.",
+      "fields": {
+        "hvac_mode": {
+          "name": "HVAC mode",
+          "description": "HVAC operation mode."
         }
       }
     }
