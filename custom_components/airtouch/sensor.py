@@ -171,6 +171,7 @@ class SpillPercentageEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
             ac_device=ac_device,
             airtouch_ac=airtouch_ac,
             id_suffix="_spill_percentage",
+            include_zone_subscription=True,
         )
         # The AirTouch algorithm will always ensure that the sum of zone opening
         # percentages remains a minimum opening percentage of:

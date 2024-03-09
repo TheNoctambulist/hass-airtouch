@@ -64,18 +64,27 @@ class AirTouchAcEntity(Entity):
         self,
         ac_device: devices.AcDevice,
         airtouch_ac: pyairtouch.AirConditioner,
+        *,
         id_suffix: str = "",
+        include_zone_subscription: bool = False,
     ) -> None:
         self._airtouch_ac = airtouch_ac
+        self._include_zone_subscription = include_zone_subscription
 
         self._attr_unique_id = ac_device.unique_id + id_suffix
         self._attr_device_info = ac_device.device_info
 
     async def async_added_to_hass(self) -> None:
-        self._airtouch_ac.subscribe_ac_state(self._async_on_ac_update)
+        if self._include_zone_subscription:
+            self._airtouch_ac.subscribe(self._async_on_ac_update)
+        else:
+            self._airtouch_ac.subscribe_ac_state(self._async_on_ac_update)
 
     async def async_will_remove_from_hass(self) -> None:
-        self._airtouch_ac.unsubscribe_ac_state(self._async_on_ac_update)
+        if self._include_zone_subscription:
+            self._airtouch_ac.unsubscribe(self._async_on_ac_update)
+        else:
+            self._airtouch_ac.unsubscribe_ac_state(self._async_on_ac_update)
 
     async def _async_on_ac_update(self, _: int) -> None:
         self.schedule_update_ha_state()
