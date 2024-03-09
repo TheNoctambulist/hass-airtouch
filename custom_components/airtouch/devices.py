@@ -3,6 +3,7 @@
 This module is used to ensure consistent device information and IDs are used
 throughout all platforms.
 """
+
 from typing import Optional
 
 import pyairtouch
