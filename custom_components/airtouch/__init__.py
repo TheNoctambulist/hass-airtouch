@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import logging
 from typing import TYPE_CHECKING
 
@@ -119,10 +120,22 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             # An empty list is handled as a special case for backwards compatibility.
             config_data.setdefault(CONF_SPILL_ZONES, [])
 
-    entry.version = CONF_VERSION
-    if hasattr(entry, "minor_version"):
-        entry.minor_version = CONF_MINOR_VERSION
-    hass.config_entries.async_update_entry(entry, data=config_data)
+    update_signature = inspect.signature(hass.config_entries.async_update_entry)
+    if "version" in update_signature.parameters:
+        # Compatibility: 2024.3 onwards
+        hass.config_entries.async_update_entry(
+            entry,
+            version=CONF_VERSION,
+            minor_version=CONF_MINOR_VERSION,
+            data=config_data,
+        )
+    else:
+        # Compatibility: Before 2024.3
+        entry.version = CONF_VERSION
+        if hasattr(entry, "minor_version"):
+            # Compatibility: For 2024.1 and 2024.2
+            entry.minor_version = CONF_MINOR_VERSION
+        hass.config_entries.async_update_entry(entry, data=config_data)
 
     _LOGGER.debug(
         "Successfully migrated config to schema v%s.%s",
