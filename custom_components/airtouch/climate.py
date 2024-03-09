@@ -1,6 +1,5 @@
 """Polyaire AirTouch Climate Devices."""
 
-
 import logging
 from collections.abc import Mapping
 from typing import Any, Optional
@@ -442,21 +441,18 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
             power_state == pyairtouch.ZonePowerState.ON
             and self._airtouch_ac.power_state == pyairtouch.AcPowerState.OFF
         ):
-            # If the zone is already on but the AC is off, then we actually need
-            # to turn the AC on to replicate the behaviour of the AirTouch app.
-            await self._airtouch_ac.set_power(pyairtouch.AcPowerControl.TURN_ON)
+            # If the zone is already on, but the AC is off we toggle the zone
+            # off then on again. This will trigger the AC to turn on if the
+            # AirTouch setting to "Turn the AC on when a zone is turned on" is
+            # enabled and mirror the behaviour of the official app.
+            await self._airtouch_zone.set_power(pyairtouch.ZonePowerState.OFF)
+            await self._airtouch_zone.set_power(pyairtouch.ZonePowerState.ON)
 
     async def async_turn_on(self) -> None:
-        # If the zone is already on but the AC is off, then we actually need to
-        # turn on the AC.
-        if (
-            self._airtouch_zone.power_state == pyairtouch.ZonePowerState.ON
-            and self._airtouch_ac.power_state == pyairtouch.AcPowerState.OFF
-        ):
-            await self._airtouch_ac.set_power(pyairtouch.AcPowerControl.TURN_ON)
-        else:
-            # Otherwise just turn on the zone
-            await self._airtouch_zone.set_power(pyairtouch.ZonePowerState.ON)
+        # Turn the zone on by activating it according to the current mode of the
+        # AirTouch AC. This will always be an "on" mode even if the AC is turned
+        # off.
+        await self.async_set_hvac_mode(_AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.mode])
 
     async def async_turn_off(self) -> None:
         await self._airtouch_zone.set_power(pyairtouch.ZonePowerState.OFF)

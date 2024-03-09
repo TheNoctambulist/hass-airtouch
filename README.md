@@ -114,7 +114,7 @@ The climate entities for the zones can be used to:
  State       | Description
 -------------|-------------
  `off`       | The zone will be in the off state if:<br>- the AC is off; or<br>- the zone is off.
- `<ac_mode>` | If the zone is turned on the zone's state will be the same as the AC's state.<br>Turning a zone on when the AC is off will automatically turn on the AC (and any other zone's that were left on).
+ `<ac_mode>` | If the zone is turned on the zone's state will be the same as the AC's state.<br>If the AirTouch setting "Turn on AC when a zone is being turned on" is enabled, turning a zone on when the AC is off will automatically turn on the AC (and any other zone's that were left on).
 
 #### Attributes
  Attribute     | Description 
