@@ -23,6 +23,15 @@
       "no_devices_found": "Couldn't connect to AirTouch console. Check the address and try again."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "min_target_temperature_step": "Minimum Target Temperature Step"
+        }
+      }
+    }
+  },
   "selector": {
     "hvac_mode": {
       "options": {

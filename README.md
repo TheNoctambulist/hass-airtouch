@@ -65,6 +65,13 @@ UDP broadcast may not work if you have installed Home Assistant in a Docker cont
 
 </details>
 
+### :gear: Options
+The following options can be modified after set-up via the integration setting page:
+
+ Option                          | Description
+---------------------------------|-------------
+ Minimum Target Temperature Step | The minumum step when changing the target temperature of climate entities.<br>This is a lower bound and the actual temperature step may bigger if the selected value is not supported by the AirTouch system.
+
 ## :bulb: Usage
 This integration provides several entities depending on the capabilities of your AirTouch system.
 A custom service is provided to allow changing the HVAC mode without changing the current power state of the air-conditioner.

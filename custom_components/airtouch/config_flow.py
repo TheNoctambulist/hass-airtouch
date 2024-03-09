@@ -4,7 +4,13 @@ from typing import Any
 import pyairtouch
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import CONF_HOST
+from homeassistant.const import (
+    CONF_HOST,
+    PRECISION_HALVES,
+    PRECISION_TENTHS,
+    PRECISION_WHOLE,
+)
+from homeassistant.core import callback
 from homeassistant.helpers import selector
 
 from .const import (
@@ -12,6 +18,8 @@ from .const import (
     CONF_SPILL_BYPASS,
     CONF_VERSION,
     DOMAIN,
+    OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
+    OPTIONS_MIN_TARGET_TEMPERATURE_STEP_DEFAULT,
     SpillBypass,
 )
 
@@ -24,6 +32,13 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     # Schema version for created config entries
     VERSION = CONF_VERSION
     MINOR_VERSION = CONF_MINOR_VERSION
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
+        return AirTouchOptionsFlow(config_entry)
 
     async def async_step_user(
         self, _: dict[str, Any] | None = None
@@ -122,3 +137,54 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_SPILL_BYPASS: SpillBypass(info[CONF_SPILL_BYPASS]),
             },
         )
+
+
+class AirTouchOptionsFlow(config_entries.OptionsFlow):
+    """Configures changeable options for the AirTouch integration."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Initialise the options flow."""
+        self.config_entry = config_entry
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.FlowResult:
+        if user_input is not None:
+            # Convert to float for storage
+            user_input[OPTIONS_MIN_TARGET_TEMPERATURE_STEP] = float(
+                user_input.get(
+                    OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
+                    OPTIONS_MIN_TARGET_TEMPERATURE_STEP_DEFAULT,
+                )
+            )
+            return self.async_create_entry(title="", data=user_input)
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
+                        default=_format_precision(
+                            self.config_entry.options.get(
+                                OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
+                                OPTIONS_MIN_TARGET_TEMPERATURE_STEP_DEFAULT,
+                            )
+                        ),
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=[
+                                _format_precision(PRECISION_WHOLE),
+                                _format_precision(PRECISION_HALVES),
+                                _format_precision(PRECISION_TENTHS),
+                            ],
+                            mode=selector.SelectSelectorMode.LIST,
+                        )
+                    )
+                }
+            ),
+        )
+
+
+def _format_precision(precision: float) -> str:
+    return f"{precision:.1f}"

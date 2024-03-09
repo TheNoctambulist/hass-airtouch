@@ -15,12 +15,13 @@ from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import devices, entities
-from .const import DOMAIN
+from .const import (
+    DOMAIN,
+    OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
+    OPTIONS_MIN_TARGET_TEMPERATURE_STEP_DEFAULT,
+)
 
 _LOGGER = logging.getLogger(__name__)
-
-# Any less than 0.5 is too low for an AC system.
-_MIN_TARGET_TEMPERATURE_STEP = 0.5
 
 
 async def async_setup_entry(
@@ -30,6 +31,10 @@ async def async_setup_entry(
 ) -> None:
     """Set up the AirTouch climate devices."""
     api_objects = hass.data[DOMAIN][config_entry.entry_id]
+    min_target_temperature_step = config_entry.options.get(
+        OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
+        OPTIONS_MIN_TARGET_TEMPERATURE_STEP_DEFAULT,
+    )
 
     discovered_entities: list[climate.ClimateEntity] = []
 
@@ -41,6 +46,7 @@ async def async_setup_entry(
             ac_entity = AcClimateEntity(
                 ac_device=ac_device,
                 airtouch_ac=airtouch_ac,
+                min_target_temperature_step=min_target_temperature_step,
             )
             discovered_entities.append(ac_entity)
 
@@ -52,6 +58,7 @@ async def async_setup_entry(
                     zone_device_info=zone_device,
                     airtouch_ac=airtouch_ac,
                     airtouch_zone=airtouch_zone,
+                    min_target_temperature_step=min_target_temperature_step,
                 )
                 discovered_entities.append(zone_entity)
 
@@ -69,6 +76,22 @@ async def async_setup_entry(
         },
         func="async_set_hvac_mode_only",
     )
+
+    # Update the climate entities when the configuration changes
+    async def update_listener(_: HomeAssistant, config_entry: ConfigEntry) -> None:
+        min_target_temperature_step = config_entry.options.get(
+            OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
+            OPTIONS_MIN_TARGET_TEMPERATURE_STEP_DEFAULT,
+        )
+
+        for entity in discovered_entities:
+            match entity:
+                case AcClimateEntity() | ZoneClimateEntity():
+                    entity.update_min_target_temperature_step(
+                        min_target_temperature_step
+                    )
+
+    config_entry.async_on_unload(config_entry.add_update_listener(update_listener))
 
 
 _AC_POWER_STATE_TO_PRESET = {
@@ -142,6 +165,7 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
         self,
         ac_device: devices.AcDevice,
         airtouch_ac: pyairtouch.AirConditioner,
+        min_target_temperature_step: float,
     ) -> None:
         super().__init__(
             ac_device=ac_device,
@@ -162,7 +186,7 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
             self._enable_turn_on_off_backwards_compatibility = False
 
         self._attr_target_temperature_step = max(
-            airtouch_ac.target_temperature_resolution, _MIN_TARGET_TEMPERATURE_STEP
+            airtouch_ac.target_temperature_resolution, min_target_temperature_step
         )
 
         # The Climate Entity groups the OFF Power State into the HVACMode
@@ -227,6 +251,11 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
             # The "current" HVAC mode
             "last_active_hvac_mode": _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.mode]
         }
+
+    def update_min_target_temperature_step(self, min_step: float) -> None:
+        self._attr_target_temperature_step = max(
+            self._airtouch_ac.target_temperature_resolution, min_step
+        )
 
     async def async_set_fan_mode(self, fan_mode: str) -> None:
         await self._airtouch_ac.set_fan_speed(_CLIMATE_TO_AC_FAN_MODE[fan_mode])
@@ -293,6 +322,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         zone_device_info: devices.ZoneDevice,
         airtouch_ac: pyairtouch.AirConditioner,
         airtouch_zone: pyairtouch.Zone,
+        min_target_temperature_step: float,
     ) -> None:
         super().__init__(
             zone_device=zone_device_info,
@@ -313,7 +343,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
             self._enable_turn_on_off_backwards_compatibility = False
 
         self._attr_target_temperature_step = max(
-            airtouch_zone.target_temperature_resolution, _MIN_TARGET_TEMPERATURE_STEP
+            airtouch_zone.target_temperature_resolution, min_target_temperature_step
         )
 
         self._attr_fan_modes = [
@@ -387,6 +417,11 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         # Home Assistant. It's unlikely to change often but potentially useful
         # for automations.
         return {"control_method": self._airtouch_zone.control_method.name.lower()}
+
+    def update_min_target_temperature_step(self, min_step: float) -> None:
+        self._attr_target_temperature_step = max(
+            self._airtouch_ac.target_temperature_resolution, min_step
+        )
 
     async def async_set_temperature(self, **kwargs: Any) -> None:  # noqa: ANN401
         temperature: float = kwargs[climate.ATTR_TEMPERATURE]

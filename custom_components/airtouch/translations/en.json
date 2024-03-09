@@ -23,6 +23,15 @@
       }
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "min_target_temperature_step": "Minimum Target Temperature Step"
+        }
+      }
+    }
+  },
   "selector": {
     "hvac_mode": {
       "options": {
