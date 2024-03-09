@@ -1,4 +1,5 @@
 """Config flow for Polyaire AirTouch."""
+
 from typing import Any
 
 import pyairtouch
@@ -16,6 +17,7 @@ from homeassistant.helpers import selector
 from .const import (
     CONF_MINOR_VERSION,
     CONF_SPILL_BYPASS,
+    CONF_SPILL_ZONES,
     CONF_VERSION,
     DOMAIN,
     OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
@@ -24,6 +26,7 @@ from .const import (
 )
 
 _CONTEXT_TITLE = "title"
+_CONTEXT_DISCOVERED_AIRTOUCHES = "discovered_airtouches"
 
 
 class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -78,6 +81,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if discovered_airtouches:
             airtouch_names = [a.name for a in discovered_airtouches]
             self.context[_CONTEXT_TITLE] = ", ".join(airtouch_names)
+            self.context[_CONTEXT_DISCOVERED_AIRTOUCHES] = discovered_airtouches
             return await self.async_step_spill_bypass()
 
         errors: dict[str, str] = {}
@@ -130,11 +134,57 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ),
             )
 
+        self.context[CONF_SPILL_BYPASS] = SpillBypass(info[CONF_SPILL_BYPASS])
+        return await self.async_step_spill_zones()
+
+    async def async_step_spill_zones(
+        self,
+        info: dict[str, Any] | None = None,
+    ) -> config_entries.FlowResult:
+        spill_bypass = self.context[CONF_SPILL_BYPASS]
+        if spill_bypass == SpillBypass.BYPASS:
+            info = {CONF_SPILL_ZONES: []}
+
+        if not info:
+            zone_options: list[selector.SelectOptionDict] = []
+            for airtouch in self.context[_CONTEXT_DISCOVERED_AIRTOUCHES]:
+                if not airtouch.initialised:
+                    await airtouch.init()
+
+                # This won't currently handle multiple airtouch systems very well...
+                zone_options.extend(
+                    [
+                        {"label": z.name, "value": str(z.zone_id)}
+                        for ac in airtouch.air_conditioners
+                        for z in ac.zones
+                    ]
+                )
+
+            return self.async_show_form(
+                step_id="spill_zones",
+                data_schema=vol.Schema(
+                    schema={
+                        vol.Required(CONF_SPILL_ZONES): selector.SelectSelector(
+                            selector.SelectSelectorConfig(
+                                options=zone_options,
+                                multiple=True,
+                                mode=selector.SelectSelectorMode.LIST,
+                            )
+                        )
+                    }
+                ),
+            )
+
+        for airtouch in self.context[_CONTEXT_DISCOVERED_AIRTOUCHES]:
+            if airtouch.initialised:
+                await airtouch.shutdown()
+
         return self.async_create_entry(
             title=self.context[_CONTEXT_TITLE],
             data={
                 CONF_HOST: self.context[CONF_HOST],
-                CONF_SPILL_BYPASS: SpillBypass(info[CONF_SPILL_BYPASS]),
+                CONF_SPILL_BYPASS: spill_bypass,
+                CONF_SPILL_ZONES: [int(z) for z in info[CONF_SPILL_ZONES]],
             },
         )
 

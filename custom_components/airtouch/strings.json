@@ -14,6 +14,10 @@
         "data": {
           "spill_bypass": "Spill/Bypass"
         }
+      },
+      "spill_zones": {
+        "title": "Select spill zones",
+        "description": "Select the zones that are used as spill zones.\nIf you are unsure, leave all zones unselected."
       }
     },
     "abort": {

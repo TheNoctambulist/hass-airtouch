@@ -176,6 +176,17 @@ These entities can safely be disabled if you are not using them.
 -----------|-------------
  `<value>` | The current damper open percentage. Range 0-100%<br>The damper open percentage does not take into account spill.
 
+### :twisted_rightwards_arrows: Sensor: Spill Percentage (`sensor.<name>_spill_percentage`)
+A [**sensor**][hass-sensor] is created for the each air-conditioner to represent the current spill percentage.
+
+This entity will only be created if one or more spill zones were selected during the integration configuration.
+For a system with one spill zone, the actual opening percentage of the zone will be the sum of the spill percentage and the current open percentage.
+
+#### States
+ State     | Description
+-----------|-------------
+ `<value>` | The current spill percentage. The spill percentage may be >100% if there are multiple spill zones.
+
 ### :battery: Binary Sensor: Battery (`binary_sensor.<zone_name>_battery`)
 A [**binary sensor**][hass-binary] is created for each zone with a temperature sensor to represent the battery state.
 
@@ -189,7 +200,7 @@ A [**binary sensor**][hass-binary] is created for each zone with a temperature s
 A [**binary sensor**][hass-binary] is created for each air-conditioner and each zone to represent the spill or bypass state according to the configuration selected when the integration was set up.
 
 If your system has a bypass damper installed, only the `binary_sensor.<ac_name>_bypass` sensor for each air-conditioner will be created.
-If your system is set up to use one or more zones for spill, you will get a `binary_sensor.<ac_name>_spill` for each air-conditioner and a `binary_sensor.<zone_name>_spill` for each zone.
+If your system is set up to use one or more zones for spill, you will get a `binary_sensor.<ac_name>_spill` for each air-conditioner and a `binary_sensor.<zone_name>_spill` for each spill zone.
 
 Note: The bypass sensor is only created for the AirTouch 5. Bypass state is not available in the AirTouch 4 API.
 

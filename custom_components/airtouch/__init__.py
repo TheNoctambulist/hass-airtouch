@@ -1,4 +1,5 @@
 """The Polyaire AirTouch integration."""
+
 from __future__ import annotations
 
 import logging
@@ -11,6 +12,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from .const import (
     CONF_MINOR_VERSION,
     CONF_SPILL_BYPASS,
+    CONF_SPILL_ZONES,
     CONF_VERSION,
     DOMAIN,
     SpillBypass,
@@ -105,12 +107,17 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # appropriate config version.
     config_data = {**entry.data}
 
-    if entry_version == 1:  # noqa: SIM102
+    if entry_version == 1:
         if entry_minor_version < 2:  # noqa: PLR2004
             # Prior to v1.2, only broadcast discovery was supported
             config_data.setdefault(CONF_HOST, None)
             # Prior to v1.2 the integration always created zone spill entities
             config_data.setdefault(CONF_SPILL_BYPASS, SpillBypass.SPILL)
+
+        if entry_minor_version < 3:  # noqa: PLR2004
+            # Prior to v1.3 spill entities were created for all zones
+            # An empty list is handled as a special case for backwards compatibility.
+            config_data.setdefault(CONF_SPILL_ZONES, [])
 
     entry.version = CONF_VERSION
     if hasattr(entry, "minor_version"):

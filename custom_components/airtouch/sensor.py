@@ -16,7 +16,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import devices, entities
-from .const import DOMAIN
+from .const import CONF_SPILL_ZONES, DOMAIN
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -34,6 +34,8 @@ async def async_setup_entry(
         config_entry.entry_id
     ]
 
+    spill_zones: list[int] = config_entry.data.get(CONF_SPILL_ZONES, [])
+
     discovered_entities: list[sensor.SensorEntity] = []
 
     for airtouch in api_objects:
@@ -45,6 +47,8 @@ async def async_setup_entry(
                 airtouch_ac=airtouch_ac,
             )
             discovered_entities.append(ac_temperature_entity)
+
+            spill_zone_count = 0
 
             for airtouch_zone in airtouch_ac.zones:
                 zone_device = ac_device.zone_device(airtouch_zone)
@@ -60,6 +64,17 @@ async def async_setup_entry(
                         airtouch_zone=airtouch_zone,
                     )
                     discovered_entities.append(zone_temperature_entity)
+
+                if airtouch_zone.zone_id in spill_zones:
+                    spill_zone_count += 1
+
+            if spill_zone_count > 0:
+                ac_spill_percentage_entity = SpillPercentageEntity(
+                    ac_device=ac_device,
+                    airtouch_ac=airtouch_ac,
+                    spill_zone_count=spill_zone_count,
+                )
+                discovered_entities.append(ac_spill_percentage_entity)
 
     _LOGGER.debug("Found entities: %s", discovered_entities)
     async_add_devices(discovered_entities)
@@ -133,3 +148,49 @@ class ZonePercentageEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
             # accurate record of zone damper percentage history.
             return 0
         return self._airtouch_zone.current_damper_percentage
+
+
+class SpillPercentageEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
+    """Sensor reporting the current spill percentage for an AC.
+
+    The value may be greater than 100% for ACs with multiple spill zones.
+    """
+
+    _attr_name = "Spill Percentage"
+    _attr_device_class = None  # No appropriate device classes are available
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_state_class = sensor.SensorStateClass.MEASUREMENT
+
+    def __init__(
+        self,
+        ac_device: devices.AcDevice,
+        airtouch_ac: pyairtouch.AirConditioner,
+        spill_zone_count: int,
+    ) -> None:
+        super().__init__(
+            ac_device=ac_device,
+            airtouch_ac=airtouch_ac,
+            id_suffix="_spill_percentage",
+        )
+        # The AirTouch algorithm will always ensure that the sum of zone opening
+        # percentages remains a minimum opening percentage of:
+        #    spill_zone_count * 100
+        self._spill_percentage_limit = spill_zone_count * 100
+
+    @property
+    def native_value(self) -> int:
+        if self._airtouch_ac.power_state in [
+            pyairtouch.AcPowerState.OFF,
+            pyairtouch.AcPowerState.OFF_AWAY,
+        ]:
+            return 0
+
+        zone_percentage_sum = sum(
+            [
+                z.current_damper_percentage
+                for z in self._airtouch_ac.zones
+                if z.power_state != pyairtouch.ZonePowerState.OFF
+            ]
+        )
+        # The spill percentage can never be less than zero
+        return max(0, self._spill_percentage_limit - zone_percentage_sum)

@@ -16,7 +16,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import devices, entities
-from .const import CONF_SPILL_BYPASS, DOMAIN, SpillBypass
+from .const import CONF_SPILL_BYPASS, CONF_SPILL_ZONES, DOMAIN, SpillBypass
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -40,6 +40,7 @@ async def async_setup_entry(
     spill_bypass = SpillBypass(
         config_entry.data.get(CONF_SPILL_BYPASS, SpillBypass.SPILL)
     )
+    spill_zones: list[int] = config_entry.data.get(CONF_SPILL_ZONES, [])
 
     discovered_entities: list[binary_sensor.BinarySensorEntity] = []
 
@@ -63,9 +64,12 @@ async def async_setup_entry(
             for airtouch_zone in airtouch_ac.zones:
                 zone_device = ac_device.zone_device(airtouch_zone)
 
-                # Zone spill sensors are only useful if the system was not set
-                # up with a bypass damper.
-                if spill_bypass == SpillBypass.SPILL:
+                # Only create spill sensors for zones that were selected as
+                # spill zones. If spill zones is empty this is an upgraded
+                # config and spill zones haven't been selected yet.
+                if spill_bypass == SpillBypass.SPILL and (
+                    airtouch_zone.zone_id in spill_zones or not spill_zones
+                ):
                     zone_spill_entity = ZoneSpillEntity(
                         zone_device=zone_device,
                         airtouch_zone=airtouch_zone,
