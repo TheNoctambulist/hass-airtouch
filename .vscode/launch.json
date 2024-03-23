@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "module": "homeassistant",
-            "justMyCode": true,
+            "justMyCode": false,
             "args": [
                 "--config",
                 "config/",
