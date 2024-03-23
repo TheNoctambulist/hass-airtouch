@@ -285,6 +285,10 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
         temperature: float = kwargs[climate.ATTR_TEMPERATURE]
         await self._airtouch_ac.set_target_temperature(temperature)
 
+        # The "climate.set_temperature" service also allows a HVAC Mode to be specified.
+        if climate.ATTR_HVAC_MODE in kwargs:
+            await self.async_set_hvac_mode(kwargs[climate.ATTR_HVAC_MODE])
+
     async def async_set_hvac_mode_only(self, hvac_mode: climate.HVACMode) -> None:
         """Set the HVAC mode without powering on.
 
@@ -425,6 +429,10 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
     async def async_set_temperature(self, **kwargs: Any) -> None:  # noqa: ANN401
         temperature: float = kwargs[climate.ATTR_TEMPERATURE]
         await self._airtouch_zone.set_target_temperature(temperature)
+
+        # The "climate.set_temperature" service also allows a HVAC Mode to be specified.
+        if climate.ATTR_HVAC_MODE in kwargs:
+            await self.async_set_hvac_mode(kwargs[climate.ATTR_HVAC_MODE])
 
     async def async_set_fan_mode(self, fan_mode: str) -> None:
         await self._airtouch_zone.set_power(_CLIMATE_TO_ZONE_FAN_MODE[fan_mode])
