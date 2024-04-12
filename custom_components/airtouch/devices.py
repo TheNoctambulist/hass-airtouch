@@ -4,12 +4,12 @@ This module is used to ensure consistent device information and IDs are used
 throughout all platforms.
 """
 
-from typing import Optional
+from typing import Optional, cast
 
 import pyairtouch
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import area_registry, device_registry
-from typing_extensions import Unpack
+from typing_extensions import Unpack  # noqa: UP035 # Compatibility: Python < 3.12
 
 from .const import DOMAIN, MANUFACTURER
 
@@ -79,7 +79,7 @@ class BaseDevice:
         Returns:
             The discovered area name, or none if no area matches.
         """
-        normalized_name = area_registry.normalize_area_name(name)
+        normalized_name = self._normalize_name(name)
 
         registry = area_registry.async_get(self._hass)
         areas: list[area_registry.AreaEntry] = list(registry.async_list_areas())
@@ -94,7 +94,7 @@ class BaseDevice:
                 best_area = area
 
             for alias in area.aliases:
-                normalised_alias = area_registry.normalize_area_name(alias)
+                normalised_alias = self._normalize_name(alias)
                 alias_distance = _levenshtein_distance(
                     normalized_name, normalised_alias
                 )
@@ -109,6 +109,12 @@ class BaseDevice:
         if best_area:
             return best_area.name
         return None
+
+    def _normalize_name(self, name: str) -> str:
+        # Compatibility: Before 2024.4
+        if hasattr(area_registry, "normalize_area_name"):
+            return cast(str, area_registry.normalize_area_name(name))
+        return area_registry.normalize_name(name)
 
 
 class ZoneDevice(BaseDevice):

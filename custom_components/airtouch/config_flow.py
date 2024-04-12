@@ -43,9 +43,11 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> config_entries.OptionsFlow:
         return AirTouchOptionsFlow(config_entry)
 
+    # Compatibility: Before 2024.4:
+    # Return type is quoted for type checking only since it is new in 2024.4.
     async def async_step_user(
         self, _: dict[str, Any] | None = None
-    ) -> config_entries.FlowResult:
+    ) -> "config_entries.ConfigFlowResult":
         """Handle a flow initialised by the user."""
         # Only a single instance is allowed since we support discovery of all
         # AirTouch consoles in a single config entry.
@@ -59,7 +61,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_discover_airtouch(
         self,
         remote_host: str | None = None,
-    ) -> config_entries.FlowResult:
+    ) -> "config_entries.ConfigFlowResult":
         """Attempt to discover AirTouch devices on the network.
 
         Attempts to perform discovery of AirTouch devices. If no remote host is
@@ -96,7 +98,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self,
         info: dict[str, Any] | None = None,
         errors: dict[str, str] | None = None,
-    ) -> config_entries.FlowResult:
+    ) -> "config_entries.ConfigFlowResult":
         if not info or errors:
             return self.async_show_form(
                 step_id="user_host",
@@ -115,7 +117,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_spill_bypass(
         self,
         info: dict[str, Any] | None = None,
-    ) -> config_entries.FlowResult:
+    ) -> "config_entries.ConfigFlowResult":
         if not info:
             return self.async_show_form(
                 step_id="spill_bypass",
@@ -140,7 +142,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_spill_zones(
         self,
         info: dict[str, Any] | None = None,
-    ) -> config_entries.FlowResult:
+    ) -> "config_entries.ConfigFlowResult":
         spill_bypass = self.context[CONF_SPILL_BYPASS]
         if spill_bypass == SpillBypass.BYPASS:
             info = {CONF_SPILL_ZONES: []}
