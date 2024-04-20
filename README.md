@@ -15,6 +15,9 @@ Supports the AirTouch 4 and AirTouch 5.
 ![AirTouch](./images/3-console-themes-slider-010-1536x565.webp)
 
 ## :computer: Installation
+This custom integration is an alternative to the built-in AirTouch 4 and AirTouch 5 integrations.
+The built-in integrations are not required for the custom integration to work.
+
 <details>
 <summary>Click to expand installation steps...</summary>
 
