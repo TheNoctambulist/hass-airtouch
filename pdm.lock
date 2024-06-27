@@ -4,8 +4,8 @@
 [metadata]
 groups = ["default", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
-lock_version = "4.4.1"
-content_hash = "sha256:e6fb82514e4e9204843b45bd4b3d30d5f2ac9a626f2416c4d6c96cf9fd2f54e3"
+lock_version = "4.4.2"
+content_hash = "sha256:b0d88fdbb6721b4e7a941e9a8f06e37cb4fdfcd6f39d69ff7e55481463ac1985"
 
 [[package]]
 name = "acme"
@@ -1186,7 +1186,7 @@ files = [
 
 [[package]]
 name = "pyairtouch"
-version = "0.7.0"
+version = "0.8.0"
 requires_python = ">=3.11"
 summary = "A fully typed asyncio API for the Polyaire AirTouch AC controllers"
 groups = ["default"]
@@ -1194,8 +1194,8 @@ dependencies = [
     "typing-extensions>=4.9.0",
 ]
 files = [
-    {file = "pyairtouch-0.7.0-py3-none-any.whl", hash = "sha256:ab2e4485a1937283fbb59e3400c331ccf4e4f6a7d9ff5fde0e25d25d0b937430"},
-    {file = "pyairtouch-0.7.0.tar.gz", hash = "sha256:2c39f54210c825784d3d91f343bc77d7d1d67db817e47211c1f82aeab6b7a841"},
+    {file = "pyairtouch-0.8.0-py3-none-any.whl", hash = "sha256:70d77e6989963ab8ce9da49228b6dcdaf54ae364b89aeb86de041ad760778086"},
+    {file = "pyairtouch-0.8.0.tar.gz", hash = "sha256:36fb26ec90565785a196e7d61d31897a2ee170efd2ad7ae6475f45fa3f2d9550"},
 ]
 
 [[package]]
