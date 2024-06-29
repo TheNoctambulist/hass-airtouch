@@ -20,6 +20,8 @@ from .const import (
     CONF_SPILL_ZONES,
     CONF_VERSION,
     DOMAIN,
+    OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES,
+    OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES_DEFAULT,
     OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
     OPTIONS_MIN_TARGET_TEMPERATURE_STEP_DEFAULT,
     SpillBypass,
@@ -87,7 +89,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             await self.async_set_unique_id(airtouch.airtouch_id)
 
-            return await self.async_step_spill_bypass()
+            return await self.async_step_settings()
 
         errors: dict[str, str] = {}
         if remote_host:
@@ -123,18 +125,21 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return await self.async_step_discover_airtouch(info[CONF_HOST])
 
-    async def async_step_spill_bypass(
+    async def async_step_settings(
         self,
         info: dict[str, Any] | None = None,
     ) -> "config_entries.ConfigFlowResult":
         if not info:
             return self.async_show_form(
-                step_id="spill_bypass",
+                step_id="settings",
                 description_placeholders={
                     "airtouch_name": self.context[_CONTEXT_TITLE],
                 },
                 data_schema=vol.Schema(
                     schema={
+                        vol.Required(
+                            OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES, default=False
+                        ): bool,
                         vol.Required(
                             CONF_SPILL_BYPASS, default=SpillBypass.SPILL.value
                         ): selector.SelectSelector(
@@ -143,11 +148,14 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                                 mode=selector.SelectSelectorMode.DROPDOWN,
                                 translation_key=CONF_SPILL_BYPASS,
                             )
-                        )
+                        ),
                     },
                 ),
             )
 
+        self.context[OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES] = info[
+            OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES
+        ]
         self.context[CONF_SPILL_BYPASS] = SpillBypass(info[CONF_SPILL_BYPASS])
         return await self.async_step_spill_zones()
 
@@ -213,6 +221,11 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_SPILL_BYPASS: self.context[CONF_SPILL_BYPASS],
                 CONF_SPILL_ZONES: self.context[CONF_SPILL_ZONES],
             },
+            options={
+                OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES: self.context[
+                    OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES
+                ]
+            },
         )
 
     def _filter_unconfigured(
@@ -259,6 +272,13 @@ class AirTouchOptionsFlow(config_entries.OptionsFlow):
             data_schema=vol.Schema(
                 {
                     vol.Required(
+                        schema=OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES,
+                        default=self.config_entry.options.get(
+                            OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES,
+                            OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES_DEFAULT,
+                        ),
+                    ): bool,
+                    vol.Required(
                         OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
                         default=_format_precision(
                             self.config_entry.options.get(
@@ -275,7 +295,7 @@ class AirTouchOptionsFlow(config_entries.OptionsFlow):
                             ],
                             mode=selector.SelectSelectorMode.LIST,
                         )
-                    )
+                    ),
                 }
             ),
         )

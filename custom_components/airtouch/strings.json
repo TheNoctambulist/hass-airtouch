@@ -8,11 +8,16 @@
           "host": "[%key:common::config_flow::data::host%]"
         }
       },
-      "spill_bypass": {
-        "title": "Spill/Bypass Configuration",
-        "description": "Found {airtouch_name}\nSelect whether your system has been installed with a bypass damper or uses spill zone(s).\nIf you are unsure leave the value unchanged.",
+      "settings": {
+        "title": "Set up the integration",
+        "description": "Found {airtouch_name}\n\nSet up integration settings below. If you are unsure leave the values unchanged.",
         "data": {
+          "allow_zone_hvac_mode_changes": "Allow AC Mode Changes From Zones",
           "spill_bypass": "Spill/Bypass"
+        },
+        "data_description": {
+          "allow_zone_hvac_mode_changes": "When selected exposes all air-conditioner modes from the zone climate entities.\nNote: Changing the mode for one zone will change the mode for all zones.",
+          "spill_bypass": "Select whether your system has been installed with a bypass damper or uses spill zone(s)."
         }
       },
       "spill_zones": {
@@ -33,6 +38,7 @@
     "step": {
       "init": {
         "data": {
+          "allow_zone_hvac_mode_changes": "Allow AC Mode Changes From Zones",
           "min_target_temperature_step": "Minimum Target Temperature Step"
         }
       }

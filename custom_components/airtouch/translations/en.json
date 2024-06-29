@@ -9,12 +9,17 @@
         "description": "Run the \"Add Hub\" action from the integration settings page to register the others with Home Assistant.",
         "title": "More than one AirTouch systems were discovered"
       },
-      "spill_bypass": {
+      "settings": {
         "data": {
+          "allow_zone_hvac_mode_changes": "Allow AC Mode Changes From Zones",
           "spill_bypass": "Spill/Bypass"
         },
-        "description": "Found {airtouch_name}\nSelect whether your system has been installed with a bypass damper or uses spill zone(s).\nIf you are unsure leave the value unchanged.",
-        "title": "Spill/Bypass Configuration"
+        "data_description": {
+          "allow_zone_hvac_mode_changes": "When selected exposes all air-conditioner modes from the zone climate entities.\nNote: Changing the mode for one zone will change the mode for all zones.",
+          "spill_bypass": "Select whether your system has been installed with a bypass damper or uses spill zone(s)."
+        },
+        "description": "Found {airtouch_name}\n\nSet up integration settings below. If you are unsure leave the values unchanged.",
+        "title": "Set up the integration"
       },
       "spill_zones": {
         "title": "Select spill zones",
@@ -33,6 +38,7 @@
     "step": {
       "init": {
         "data": {
+          "allow_zone_hvac_mode_changes": "Allow AC Mode Changes From Zones",
           "min_target_temperature_step": "Minimum Target Temperature Step"
         }
       }

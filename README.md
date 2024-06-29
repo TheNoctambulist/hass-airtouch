@@ -71,9 +71,10 @@ UDP broadcast may not work if you have installed Home Assistant in a Docker cont
 ### :gear: Options
 The following options can be modified after set-up via the integration setting page:
 
- Option                          | Description
----------------------------------|-------------
- Minimum Target Temperature Step | The minumum step when changing the target temperature of climate entities.<br>This is a lower bound and the actual temperature step may bigger if the selected value is not supported by the AirTouch system.
+ Option                           | Description
+----------------------------------|-------------
+ Allow AC Mode Changes From Zones | When selected exposes all air-conditioner modes from the zone climate entities.<br><i>Note</i>: Changing the mode for one zone will change the mode for all zones.<br>If you'd like to automatically turn the AC on when a zone is turned on you can enable the setting "Turn on AC when a zone is being turned on" on the AirTouch console.
+ Minimum Target Temperature Step  | The minumum step when changing the target temperature of climate entities.<br>This is a lower bound and the actual temperature step may bigger if the selected value is not supported by the AirTouch system.
 
 ## :bulb: Usage
 This integration provides several entities depending on the capabilities of your AirTouch system.
@@ -85,7 +86,7 @@ The entities and services are described in the following sections.
 
 For each air-conditioner in the AirTouch system a [**climate**][hass-climate] entity is created.
 
-The climate entity is be named after the air-conditioner, this is often the brand name of the air-conditioner, e.g. Panasonic of Fujitsu.
+The climate entity is be named after the air-conditioner, this is often the brand name of the air-conditioner, e.g. Panasonic or Fujitsu.
 
 Use this entity to control the overall state of the system such as the Heating/Coolng Mode, Fan Speed etc.
 
@@ -120,12 +121,13 @@ The climate entities for the zones can be used to:
  `<ac_mode>` | If the zone is turned on the zone's state will be the same as the AC's state.<br>If the AirTouch setting "Turn on AC when a zone is being turned on" is enabled, turning a zone on when the AC is off will automatically turn on the AC (and any other zone's that were left on).
 
 #### Attributes
- Attribute     | Description 
----------------|-------------
- `hvac_modes`  | The available HVAC Modes for a zone will dynamically change based on the current AC mode.<br>The list will always have two values: `off` and the current AC mode.
- `fan_modes`   | `on`, `off`, and `turbo` (if supported).<br>Fan speed is controlled by the AC climate entity.
- `fan_mode`    | The fan mode will remain `on` if the zone is on even if the AC is turned off.<br>This can be used to see which zones will be active if the AC is turned on.
- `temperature` | The target temperature for the zone.<br>Changing the target temperature when a zone is in damper control will automatically change it back to being temperature controlled.
+ Attribute        | Description 
+------------------|-------------
+ `hvac_modes`     | If `Allow AC Mode Changes From Zones` has been enabled in the integration options, the available modes will match the Air-Conditioner climate entity. Otherwise, the available HVAC Modes for a zone will dynamically change based on the current AC mode, i.e. the list will always have two values: `off` and the current AC mode.
+ `fan_modes`      | `on`, `off`, and `turbo` (if supported).<br>Fan speed is controlled by the AC climate entity.
+ `fan_mode`       | The fan mode will remain `on` if the zone is on even if the AC is turned off.<br>This can be used to see which zones will be active if the AC is turned on.
+ `temperature`    | The target temperature for the zone.<br>Changing the target temperature when a zone is in damper control will automatically change it back to being temperature controlled.
+ `control_method` | Indicates the current control method for the zone, either `damper` or `temperature`.
 
 ### :wind_face: Cover: Zone (`cover.<zone_name>_damper`)
 A [**cover**][hass-cover] entity is created for all zones (whether they have) to represent the current damper state.

@@ -16,6 +16,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import devices, entities
 from .const import (
     DOMAIN,
+    OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES,
+    OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES_DEFAULT,
     OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
     OPTIONS_MIN_TARGET_TEMPERATURE_STEP_DEFAULT,
 )
@@ -33,6 +35,10 @@ async def async_setup_entry(
     min_target_temperature_step = config_entry.options.get(
         OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
         OPTIONS_MIN_TARGET_TEMPERATURE_STEP_DEFAULT,
+    )
+    allow_zone_hvac_mode_changes = config_entry.options.get(
+        OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES,
+        OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES_DEFAULT,
     )
 
     discovered_entities: list[climate.ClimateEntity] = []
@@ -56,6 +62,7 @@ async def async_setup_entry(
                 airtouch_ac=airtouch_ac,
                 airtouch_zone=airtouch_zone,
                 min_target_temperature_step=min_target_temperature_step,
+                allow_zone_hvac_mode_changes=allow_zone_hvac_mode_changes,
             )
             discovered_entities.append(zone_entity)
 
@@ -81,11 +88,23 @@ async def async_setup_entry(
             OPTIONS_MIN_TARGET_TEMPERATURE_STEP_DEFAULT,
         )
 
+        allow_zone_hvac_mode_changes = config_entry.options.get(
+            OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES,
+            OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES_DEFAULT,
+        )
+
         for entity in discovered_entities:
             match entity:
-                case AcClimateEntity() | ZoneClimateEntity():
+                case AcClimateEntity():
                     entity.update_min_target_temperature_step(
-                        min_target_temperature_step
+                        min_step=min_target_temperature_step
+                    )
+                case ZoneClimateEntity():
+                    entity.update_min_target_temperature_step(
+                        min_step=min_target_temperature_step
+                    )
+                    entity.update_allow_zone_hvac_mode_changes(
+                        allow_mode_changes=allow_zone_hvac_mode_changes
                     )
 
     config_entry.async_on_unload(config_entry.add_update_listener(update_listener))
@@ -318,18 +337,21 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
 
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
-    def __init__(
+    def __init__(  # noqa: PLR0913 disable too many arguments
         self,
         zone_device_info: devices.ZoneDevice,
         airtouch_ac: pyairtouch.AirConditioner,
         airtouch_zone: pyairtouch.Zone,
         min_target_temperature_step: float,
+        *,
+        allow_zone_hvac_mode_changes: bool,
     ) -> None:
         super().__init__(
             zone_device=zone_device_info,
             airtouch_zone=airtouch_zone,
         )
         self._airtouch_ac = airtouch_ac
+        self._allow_zone_hvac_mode_changes = allow_zone_hvac_mode_changes
 
         self._attr_supported_features = (
             climate.ClimateEntityFeature.FAN_MODE
@@ -347,6 +369,12 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
             airtouch_zone.target_temperature_resolution, min_target_temperature_step
         )
 
+        if self._allow_zone_hvac_mode_changes:
+            # The zone should expose all of the supported HVAC modes for the AC
+            self._attr_hvac_modes = [climate.HVACMode.OFF] + [
+                _AC_TO_CLIMATE_HVAC_MODE[mode] for mode in airtouch_ac.supported_modes
+            ]
+
         self._attr_fan_modes = [
             _ZONE_TO_CLIMATE_FAN_MODE[fan_speed]
             for fan_speed in airtouch_zone.supported_power_states
@@ -362,7 +390,9 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
 
     @property
     def hvac_modes(self) -> list[climate.HVACMode]:
-        # The Zone can either be off, or on in the current mode of the AC
+        if self._allow_zone_hvac_mode_changes:
+            return self._attr_hvac_modes
+        # otherwises the Zone can either be off, or on in the current mode of the AC
         return [
             climate.HVACMode.OFF,
             _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.mode],
@@ -423,6 +453,11 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         self._attr_target_temperature_step = max(
             self._airtouch_ac.target_temperature_resolution, min_step
         )
+        self.async_schedule_update_ha_state()
+
+    def update_allow_zone_hvac_mode_changes(self, *, allow_mode_changes: bool) -> None:
+        self._allow_zone_hvac_mode_changes = allow_mode_changes
+        self.async_schedule_update_ha_state()
 
     async def async_set_temperature(self, **kwargs: Any) -> None:  # noqa: ANN401
         temperature: float = kwargs[climate.ATTR_TEMPERATURE]
@@ -440,6 +475,13 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         power_state = pyairtouch.ZonePowerState.ON
         if hvac_mode == climate.HVACMode.OFF:
             power_state = pyairtouch.ZonePowerState.OFF
+
+        # If configured to do so, change the AC HVAC mode based on the zone change
+        if (
+            self._allow_zone_hvac_mode_changes
+            and power_state == pyairtouch.ZonePowerState.ON
+        ):
+            await self._airtouch_ac.set_mode(_CLIMATE_TO_AC_HVAC_MODE[hvac_mode])
 
         if self._airtouch_zone.power_state != power_state:
             await self._airtouch_zone.set_power(power_state)
