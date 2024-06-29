@@ -369,11 +369,10 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
             airtouch_zone.target_temperature_resolution, min_target_temperature_step
         )
 
-        if self._allow_zone_hvac_mode_changes:
-            # The zone should expose all of the supported HVAC modes for the AC
-            self._attr_hvac_modes = [climate.HVACMode.OFF] + [
-                _AC_TO_CLIMATE_HVAC_MODE[mode] for mode in airtouch_ac.supported_modes
-            ]
+        # Only used when allow_zone_hvac_mode_changes is True
+        self._attr_hvac_modes = [climate.HVACMode.OFF] + [
+            _AC_TO_CLIMATE_HVAC_MODE[mode] for mode in airtouch_ac.supported_modes
+        ]
 
         self._attr_fan_modes = [
             _ZONE_TO_CLIMATE_FAN_MODE[fan_speed]
