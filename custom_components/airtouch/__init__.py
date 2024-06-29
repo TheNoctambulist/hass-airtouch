@@ -118,6 +118,14 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if entry_version < 2:  # noqa: PLR2004
         # Migration is not supported from config version 1 to version 2.
+        _LOGGER.error(
+            "Migration not supported from v%s.%s to v%s.%s. "
+            "Delete and re-add config entries.",
+            entry_version,
+            entry_minor_version,
+            CONF_VERSION,
+            CONF_MINOR_VERSION,
+        )
         return False
 
     # Take a copy of the existing data so we can mutate it until we reach the

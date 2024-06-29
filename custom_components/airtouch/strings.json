@@ -20,7 +20,7 @@
         "description": "Select the zones that are used as spill zones.\nIf you are unsure, leave all zones unselected."
       },
       "finalise": {
-        "title": "More than one AirTouch systems were discovered",
+        "title": "More than one AirTouch found",
         "description": "Run the \"Add Hub\" action from the integration settings page to register the others with Home Assistant."
       }
     },
