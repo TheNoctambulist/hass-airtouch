@@ -6,7 +6,6 @@ Sensors are used to represent:
 """
 
 import logging
-from typing import TYPE_CHECKING
 
 import pyairtouch
 from homeassistant.components import sensor
@@ -18,9 +17,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import devices, entities
 from .const import CONF_SPILL_ZONES, DOMAIN
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -30,51 +26,48 @@ async def async_setup_entry(
     async_add_devices: AddEntitiesCallback,
 ) -> None:
     """Set up the AirTouch sensors."""
-    api_objects: Sequence[pyairtouch.AirTouch] = hass.data[DOMAIN][
-        config_entry.entry_id
-    ]
+    airtouch: pyairtouch.AirTouch = hass.data[DOMAIN][config_entry.entry_id]
 
     spill_zones: list[int] = config_entry.data.get(CONF_SPILL_ZONES, [])
 
     discovered_entities: list[sensor.SensorEntity] = []
 
-    for airtouch in api_objects:
-        airtouch_device = devices.AirTouchDevice(hass, config_entry.entry_id, airtouch)
-        for airtouch_ac in airtouch.air_conditioners:
-            ac_device = airtouch_device.ac_device(airtouch_ac)
-            ac_temperature_entity = AcTemperatureEntity(
-                ac_device=ac_device,
-                airtouch_ac=airtouch_ac,
+    airtouch_device = devices.AirTouchDevice(hass, config_entry.entry_id, airtouch)
+    for airtouch_ac in airtouch.air_conditioners:
+        ac_device = airtouch_device.ac_device(airtouch_ac)
+        ac_temperature_entity = AcTemperatureEntity(
+            ac_device=ac_device,
+            airtouch_ac=airtouch_ac,
+        )
+        discovered_entities.append(ac_temperature_entity)
+
+        spill_zone_count = 0
+
+        for airtouch_zone in airtouch_ac.zones:
+            zone_device = ac_device.zone_device(airtouch_zone)
+            zone_percentage_entity = ZonePercentageEntity(
+                zone_device=zone_device,
+                airtouch_zone=airtouch_zone,
             )
-            discovered_entities.append(ac_temperature_entity)
+            discovered_entities.append(zone_percentage_entity)
 
-            spill_zone_count = 0
-
-            for airtouch_zone in airtouch_ac.zones:
-                zone_device = ac_device.zone_device(airtouch_zone)
-                zone_percentage_entity = ZonePercentageEntity(
+            if airtouch_zone.has_temp_sensor:
+                zone_temperature_entity = ZoneTemperatureEntity(
                     zone_device=zone_device,
                     airtouch_zone=airtouch_zone,
                 )
-                discovered_entities.append(zone_percentage_entity)
+                discovered_entities.append(zone_temperature_entity)
 
-                if airtouch_zone.has_temp_sensor:
-                    zone_temperature_entity = ZoneTemperatureEntity(
-                        zone_device=zone_device,
-                        airtouch_zone=airtouch_zone,
-                    )
-                    discovered_entities.append(zone_temperature_entity)
+            if airtouch_zone.zone_id in spill_zones:
+                spill_zone_count += 1
 
-                if airtouch_zone.zone_id in spill_zones:
-                    spill_zone_count += 1
-
-            if spill_zone_count > 0:
-                ac_spill_percentage_entity = SpillPercentageEntity(
-                    ac_device=ac_device,
-                    airtouch_ac=airtouch_ac,
-                    spill_zone_count=spill_zone_count,
-                )
-                discovered_entities.append(ac_spill_percentage_entity)
+        if spill_zone_count > 0:
+            ac_spill_percentage_entity = SpillPercentageEntity(
+                ac_device=ac_device,
+                airtouch_ac=airtouch_ac,
+                spill_zone_count=spill_zone_count,
+            )
+            discovered_entities.append(ac_spill_percentage_entity)
 
     _LOGGER.debug("Found entities: %s", discovered_entities)
     async_add_devices(discovered_entities)

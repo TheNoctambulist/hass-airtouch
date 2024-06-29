@@ -193,9 +193,10 @@ class AirTouchDevice(BaseDevice):
         super().__init__(
             hass=hass,
             config_entry_id=config_entry_id,
-            # We know the serial number for the AirTouch, so use that as the unique
-            # ID as per the Entity documentation.
-            unique_id=airtouch.serial,
+            # For AirTouch 4 systems the serial number doesn't appear to be
+            # unique (some logs have shown an all zeroes MAC address). The
+            # AirTouch ID is always unique, so we use that here.
+            unique_id=airtouch.airtouch_id,
             name=airtouch.name,
             manufacturer=MANUFACTURER,
             model=airtouch.model.value,

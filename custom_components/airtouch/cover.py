@@ -31,22 +31,21 @@ async def async_setup_entry(
     async_add_devices: AddEntitiesCallback,
 ) -> None:
     """Set up the AirTouch cover devices."""
-    api_objects = hass.data[DOMAIN][config_entry.entry_id]
+    airtouch: pyairtouch.AirTouch = hass.data[DOMAIN][config_entry.entry_id]
 
     discovered_entities: list[cover.CoverEntity] = []
 
-    for airtouch in api_objects:
-        airtouch_device = devices.AirTouchDevice(hass, config_entry.entry_id, airtouch)
-        for airtouch_ac in airtouch.air_conditioners:
-            ac_device = airtouch_device.ac_device(airtouch_ac)
+    airtouch_device = devices.AirTouchDevice(hass, config_entry.entry_id, airtouch)
+    for airtouch_ac in airtouch.air_conditioners:
+        ac_device = airtouch_device.ac_device(airtouch_ac)
 
-            for airtouch_zone in airtouch_ac.zones:
-                zone_device = ac_device.zone_device(airtouch_zone)
-                zone_entity = ZoneDamperEntity(
-                    zone_device=zone_device,
-                    airtouch_zone=airtouch_zone,
-                )
-                discovered_entities.append(zone_entity)
+        for airtouch_zone in airtouch_ac.zones:
+            zone_device = ac_device.zone_device(airtouch_zone)
+            zone_entity = ZoneDamperEntity(
+                zone_device=zone_device,
+                airtouch_zone=airtouch_zone,
+            )
+            discovered_entities.append(zone_entity)
 
     _LOGGER.debug("Found entities %s", discovered_entities)
     async_add_devices(discovered_entities)

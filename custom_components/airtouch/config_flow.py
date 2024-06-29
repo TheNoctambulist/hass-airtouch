@@ -26,7 +26,8 @@ from .const import (
 )
 
 _CONTEXT_TITLE = "title"
-_CONTEXT_DISCOVERED_AIRTOUCHES = "discovered_airtouches"
+_CONTEXT_AIRTOUCH_API = "airtouch_api"
+_CONTEXT_REMAINING_AIRTOUCHES = "remaining_airtouches"
 
 
 class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -49,13 +50,6 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, _: dict[str, Any] | None = None
     ) -> "config_entries.ConfigFlowResult":
         """Handle a flow initialised by the user."""
-        # Only a single instance is allowed since we support discovery of all
-        # AirTouch consoles in a single config entry.
-        if self._async_current_entries():
-            return self.async_abort(reason="single_instance_allowed")
-
-        await self.async_set_unique_id(DOMAIN, raise_on_progress=False)
-
         return await self.async_step_discover_airtouch()
 
     async def async_step_discover_airtouch(
@@ -80,17 +74,32 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.context[CONF_HOST] = remote_host
 
         discovered_airtouches = await pyairtouch.discover(remote_host)
-        if discovered_airtouches:
-            airtouch_names = [a.name for a in discovered_airtouches]
-            self.context[_CONTEXT_TITLE] = ", ".join(airtouch_names)
-            self.context[_CONTEXT_DISCOVERED_AIRTOUCHES] = discovered_airtouches
+        airtouches = self._filter_unconfigured(discovered_airtouches)
+
+        if airtouches:
+            # If more than one AirTouch is discovered, arbitrarily choose the
+            # last one in the list. The user will need to run the config flow
+            # again to add the other AirTouch devices.
+            airtouch = airtouches.pop()
+            self.context[_CONTEXT_TITLE] = airtouch.name
+            self.context[_CONTEXT_AIRTOUCH_API] = airtouch
+            self.context[_CONTEXT_REMAINING_AIRTOUCHES] = airtouches
+
+            await self.async_set_unique_id(airtouch.airtouch_id)
+
             return await self.async_step_spill_bypass()
 
         errors: dict[str, str] = {}
         if remote_host:
             # Show an error if the user has entered a hostname and we are
             # re-prompting them after a failed discovery.
-            errors[CONF_HOST] = "no_devices_found"
+            #
+            # There are two cases to consider, either no AirTouch was found or
+            # the AirTouch that was found had already been discovered.
+            if discovered_airtouches:
+                errors[CONF_HOST] = "already_configured"
+            else:
+                errors[CONF_HOST] = "no_devices_found"
 
         return await self.async_step_user_host(errors=errors)
 
@@ -121,6 +130,9 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if not info:
             return self.async_show_form(
                 step_id="spill_bypass",
+                description_placeholders={
+                    "airtouch_name": self.context[_CONTEXT_TITLE],
+                },
                 data_schema=vol.Schema(
                     schema={
                         vol.Required(
@@ -149,18 +161,20 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if not info:
             zone_options: list[selector.SelectOptionDict] = []
-            for airtouch in self.context[_CONTEXT_DISCOVERED_AIRTOUCHES]:
-                if not airtouch.initialised:
-                    await airtouch.init()
+            airtouch: pyairtouch.AirTouch = self.context[_CONTEXT_AIRTOUCH_API]
 
-                # This won't currently handle multiple airtouch systems very well...
-                zone_options.extend(
-                    [
-                        {"label": z.name, "value": str(z.zone_id)}
-                        for ac in airtouch.air_conditioners
-                        for z in ac.zones
-                    ]
-                )
+            await airtouch.init()
+
+            # Zone IDs are unique across all ACs within an AirTouch system.
+            zone_options.extend(
+                [
+                    {"label": z.name, "value": str(z.zone_id)}
+                    for ac in airtouch.air_conditioners
+                    for z in ac.zones
+                ]
+            )
+
+            await airtouch.shutdown()
 
             return self.async_show_form(
                 step_id="spill_zones",
@@ -177,18 +191,47 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ),
             )
 
-        for airtouch in self.context[_CONTEXT_DISCOVERED_AIRTOUCHES]:
-            if airtouch.initialised:
-                await airtouch.shutdown()
+        self.context[CONF_SPILL_ZONES] = [int(z) for z in info[CONF_SPILL_ZONES]]
+
+        return await self.async_step_finalise()
+
+    async def async_step_finalise(
+        self, info: dict[str, Any] | None = None
+    ) -> "config_entries.ConfigFlowResult":
+        if info is None and self.context[_CONTEXT_REMAINING_AIRTOUCHES]:
+            # Show an empty form just so that we can put a title and description
+            # to notify the user that additional AirTouches have been
+            # discovered.
+            return self.async_show_form(
+                step_id="finalise",
+            )
 
         return self.async_create_entry(
             title=self.context[_CONTEXT_TITLE],
             data={
                 CONF_HOST: self.context[CONF_HOST],
-                CONF_SPILL_BYPASS: spill_bypass,
-                CONF_SPILL_ZONES: [int(z) for z in info[CONF_SPILL_ZONES]],
+                CONF_SPILL_BYPASS: self.context[CONF_SPILL_BYPASS],
+                CONF_SPILL_ZONES: self.context[CONF_SPILL_ZONES],
             },
         )
+
+    def _filter_unconfigured(
+        self, discovered_airtouches: list[pyairtouch.AirTouch]
+    ) -> list[pyairtouch.AirTouch]:
+        """Filter to a list of unconfigured AirTouch systems.
+
+        Return a new list of AirTouch systems that contains only those that have
+        not already been associated with a config entry. The returned list may
+        be empty.
+        """
+        configured_airtouch_ids = [
+            entry.unique_id for entry in self._async_current_entries()
+        ]
+        return [
+            airtouch
+            for airtouch in discovered_airtouches
+            if airtouch.airtouch_id not in configured_airtouch_ids
+        ]
 
 
 class AirTouchOptionsFlow(config_entries.OptionsFlow):

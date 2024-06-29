@@ -29,7 +29,7 @@ async def async_setup_entry(
     async_add_devices: AddEntitiesCallback,
 ) -> None:
     """Set up the AirTouch climate devices."""
-    api_objects = hass.data[DOMAIN][config_entry.entry_id]
+    airtouch: pyairtouch.AirTouch = hass.data[DOMAIN][config_entry.entry_id]
     min_target_temperature_step = config_entry.options.get(
         OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
         OPTIONS_MIN_TARGET_TEMPERATURE_STEP_DEFAULT,
@@ -37,29 +37,27 @@ async def async_setup_entry(
 
     discovered_entities: list[climate.ClimateEntity] = []
 
-    for airtouch in api_objects:
-        airtouch_device = devices.AirTouchDevice(hass, config_entry.entry_id, airtouch)
+    airtouch_device = devices.AirTouchDevice(hass, config_entry.entry_id, airtouch)
+    for airtouch_ac in airtouch.air_conditioners:
+        ac_device = airtouch_device.ac_device(airtouch_ac)
+        ac_entity = AcClimateEntity(
+            ac_device=ac_device,
+            airtouch_ac=airtouch_ac,
+            min_target_temperature_step=min_target_temperature_step,
+        )
+        discovered_entities.append(ac_entity)
 
-        for airtouch_ac in airtouch.air_conditioners:
-            ac_device = airtouch_device.ac_device(airtouch_ac)
-            ac_entity = AcClimateEntity(
-                ac_device=ac_device,
+        # Only zones with temperature sensors can be climate entities
+        temp_zones = (zone for zone in airtouch_ac.zones if zone.has_temp_sensor)
+        for airtouch_zone in temp_zones:
+            zone_device = ac_device.zone_device(airtouch_zone)
+            zone_entity = ZoneClimateEntity(
+                zone_device_info=zone_device,
                 airtouch_ac=airtouch_ac,
+                airtouch_zone=airtouch_zone,
                 min_target_temperature_step=min_target_temperature_step,
             )
-            discovered_entities.append(ac_entity)
-
-            # Only zones with temperature sensors can be climate entities
-            temp_zones = (zone for zone in airtouch_ac.zones if zone.has_temp_sensor)
-            for airtouch_zone in temp_zones:
-                zone_device = ac_device.zone_device(airtouch_zone)
-                zone_entity = ZoneClimateEntity(
-                    zone_device_info=zone_device,
-                    airtouch_ac=airtouch_ac,
-                    airtouch_zone=airtouch_zone,
-                    min_target_temperature_step=min_target_temperature_step,
-                )
-                discovered_entities.append(zone_entity)
+            discovered_entities.append(zone_entity)
 
     _LOGGER.debug("Found entities %s", discovered_entities)
 

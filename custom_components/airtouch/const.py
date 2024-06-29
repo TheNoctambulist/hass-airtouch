@@ -8,8 +8,8 @@ DOMAIN = "airtouch"
 
 MANUFACTURER = "Polyaire"
 
-CONF_VERSION = 1
-CONF_MINOR_VERSION = 3
+CONF_VERSION = 2
+CONF_MINOR_VERSION = 1
 
 # Indicates whether the AirTouch is set up with a spill zone or with a bypass duct.
 CONF_SPILL_BYPASS = "spill_bypass"

@@ -1,17 +1,19 @@
 {
   "config": {
-    "abort": {
-      "single_instance_allowed": "Already configured. Only a single configuration possible."
-    },
     "error": {
+      "already_configured": "Already configured. Enter a new host name or IP address.",
       "no_devices_found": "Failed to connect to AirTouch console. Check the address and try again."
     },
     "step": {
+      "finalise": {
+        "description": "Run the \"Add Hub\" action from the integration settings page to register the others with Home Assistant.",
+        "title": "More than one AirTouch systems were discovered"
+      },
       "spill_bypass": {
         "data": {
           "spill_bypass": "Spill/Bypass"
         },
-        "description": "Select whether your system has been installed with a bypass damper or uses spill zone(s).\nIf you are unsure leave the value unchanged.",
+        "description": "Found {airtouch_name}\nSelect whether your system has been installed with a bypass damper or uses spill zone(s).\nIf you are unsure leave the value unchanged.",
         "title": "Spill/Bypass Configuration"
       },
       "spill_zones": {

@@ -7,7 +7,7 @@ Binary sensors are used to represent:
 """
 
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 import pyairtouch
 from homeassistant.components import binary_sensor
@@ -18,9 +18,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import devices, entities
 from .const import CONF_SPILL_BYPASS, CONF_SPILL_ZONES, DOMAIN, SpillBypass
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -30,9 +27,7 @@ async def async_setup_entry(
     async_add_devices: AddEntitiesCallback,
 ) -> None:
     """Set up the AirTouch binary sensors."""
-    api_objects: Sequence[pyairtouch.AirTouch] = hass.data[DOMAIN][
-        config_entry.entry_id
-    ]
+    airtouch: pyairtouch.AirTouch = hass.data[DOMAIN][config_entry.entry_id]
 
     # When reading serialised configuration, the config data will be the
     # underlying value not the enum value so it needs to be converted to an enum
@@ -44,44 +39,43 @@ async def async_setup_entry(
 
     discovered_entities: list[binary_sensor.BinarySensorEntity] = []
 
-    for airtouch in api_objects:
-        airtouch_device = devices.AirTouchDevice(hass, config_entry.entry_id, airtouch)
-        for airtouch_ac in airtouch.air_conditioners:
-            ac_device = airtouch_device.ac_device(airtouch_ac)
+    airtouch_device = devices.AirTouchDevice(hass, config_entry.entry_id, airtouch)
+    for airtouch_ac in airtouch.air_conditioners:
+        ac_device = airtouch_device.ac_device(airtouch_ac)
 
-            if (
-                spill_bypass == SpillBypass.SPILL
-                # AirTouch 4 doesn't report bypass status, so don't create a sensor.
-                or airtouch.model != pyairtouch.AirTouchModel.AIRTOUCH_4
+        if (
+            spill_bypass == SpillBypass.SPILL
+            # AirTouch 4 doesn't report bypass status, so don't create a sensor.
+            or airtouch.model != pyairtouch.AirTouchModel.AIRTOUCH_4
+        ):
+            ac_spill_entity = AcSpillBypassEntity(
+                spill_bypass=spill_bypass,
+                ac_device=ac_device,
+                airtouch_ac=airtouch_ac,
+            )
+            discovered_entities.append(ac_spill_entity)
+
+        for airtouch_zone in airtouch_ac.zones:
+            zone_device = ac_device.zone_device(airtouch_zone)
+
+            # Only create spill sensors for zones that were selected as
+            # spill zones. If spill zones is empty this is an upgraded
+            # config and spill zones haven't been selected yet.
+            if spill_bypass == SpillBypass.SPILL and (
+                airtouch_zone.zone_id in spill_zones or not spill_zones
             ):
-                ac_spill_entity = AcSpillBypassEntity(
-                    spill_bypass=spill_bypass,
-                    ac_device=ac_device,
-                    airtouch_ac=airtouch_ac,
+                zone_spill_entity = ZoneSpillEntity(
+                    zone_device=zone_device,
+                    airtouch_zone=airtouch_zone,
                 )
-                discovered_entities.append(ac_spill_entity)
+                discovered_entities.append(zone_spill_entity)
 
-            for airtouch_zone in airtouch_ac.zones:
-                zone_device = ac_device.zone_device(airtouch_zone)
-
-                # Only create spill sensors for zones that were selected as
-                # spill zones. If spill zones is empty this is an upgraded
-                # config and spill zones haven't been selected yet.
-                if spill_bypass == SpillBypass.SPILL and (
-                    airtouch_zone.zone_id in spill_zones or not spill_zones
-                ):
-                    zone_spill_entity = ZoneSpillEntity(
-                        zone_device=zone_device,
-                        airtouch_zone=airtouch_zone,
-                    )
-                    discovered_entities.append(zone_spill_entity)
-
-                if airtouch_zone.has_temp_sensor:
-                    zone_battery_entity = ZoneBatteryEntity(
-                        zone_device=zone_device,
-                        airtouch_zone=airtouch_zone,
-                    )
-                    discovered_entities.append(zone_battery_entity)
+            if airtouch_zone.has_temp_sensor:
+                zone_battery_entity = ZoneBatteryEntity(
+                    zone_device=zone_device,
+                    airtouch_zone=airtouch_zone,
+                )
+                discovered_entities.append(zone_battery_entity)
 
     _LOGGER.debug("Found entities %s", discovered_entities)
     async_add_devices(discovered_entities)
