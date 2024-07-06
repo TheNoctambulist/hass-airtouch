@@ -6,13 +6,19 @@
 
 ![HACS][hacs-shield]
 
-
-
 Integration to integrate with the [Polyaire AirTouch][polyaire-airtouch] smart air conditioner controller.
 
 Supports the AirTouch 4 and AirTouch 5.
 
 ![AirTouch](./images/3-console-themes-slider-010-1536x565.webp)
+
+## Table Of Contents
+* [:computer: Installation](#-installation)
+* [:gear: Configuration](#️-configuration)
+* [:bulb: Usage](#-usage)
+* [:hammer_and_wrench: Automation Blueprints](#️-automation-blueprints)
+* [:yellow_heart: Say Thank You](#-say-thank-you)
+
 
 ## :computer: Installation
 This custom integration is an alternative to the built-in AirTouch 4 and AirTouch 5 integrations.
@@ -90,6 +96,9 @@ The climate entity is be named after the air-conditioner, this is often the bran
 
 Use this entity to control the overall state of the system such as the Heating/Coolng Mode, Fan Speed etc.
 
+<details>
+<summary>States and Attributes</summary>
+
 #### States
  State       | Description
 -------------|-------------
@@ -105,6 +114,8 @@ Use this entity to control the overall state of the system such as the Heating/C
  `last_active_hvac_mode` | The last active HVAC mode.<br>While the AC is turned on this will match the current state. While the AC is turned off the attribute indicates the mode that will become active if the `climate.turn_on` service is called.
  `temperature`           | The target temperature for the AC.<br>*Note*: If you have zones with temperature controllers, changing the target temperature will have no effect.
 
+</details>
+
 ### :snowflake: Climate: Zone (`climate.<zone_name>`)
 If you have any zones set up with a temperature sensor, a separate [**climate**][hass-climate] entity will be created for each zone.
 
@@ -113,6 +124,9 @@ The climate entities for the zones can be used to:
 - turn the zone on or off
 - change the target temperature
 - set the zone to turbo (if supported)
+
+<details>
+<summary>States and Attributes</summary>
 
 #### States
  State       | Description
@@ -129,6 +143,8 @@ The climate entities for the zones can be used to:
  `temperature`    | The target temperature for the zone.<br>Changing the target temperature when a zone is in damper control will automatically change it back to being temperature controlled.
  `control_method` | Indicates the current control method for the zone, either `damper` or `temperature`.
 
+</details>
+
 ### :wind_face: Cover: Zone (`cover.<zone_name>_damper`)
 A [**cover**][hass-cover] entity is created for all zones (whether they have) to represent the current damper state.
 
@@ -138,6 +154,9 @@ The cover entity for zones can be used to:
 - change the damper percentage (not recommended for zones with temperature sensors!)
 
 The damper percentage can only be changed in increments of 5% to align with the official app.
+
+<details>
+<summary>States and Attributes</summary>
 
 #### States
  State    | Description 
@@ -149,6 +168,8 @@ The damper percentage can only be changed in increments of 5% to align with the 
  Attribute | Description 
 -----------|-------------
  `current_position` | The current open percentage of the damper. 0 is closed, 100 is fully open.<br>Changing the damper percentage when a zone is in temperature control will automatically change it to a fixed damper position.<br>*Note:* The current open percentage reflects the AirTouch algorithm's intended position, it will not be accurate for a zone that is being used as a spill.
+
+</details>
 
 #### Using Zones With Thermostat Cards
 If you're using the new Thermostat Card in recent versions of Home Assistant and want to enable the *Climate HVAC Modes* feature, some manual customisation is required to show the available HVAC modes correctly.
@@ -165,10 +186,15 @@ Dedicated temperature sensors make it easy to use the current temperature in aut
 
 These entities can safely be disabled if you are not using them.
 
+<details>
+<summary>States and Attributes</summary>
+
 #### States
  State     | Description
 -----------|-------------
  `<value>` | The current temperature value in °C
+
+</details>
 
 ### :large_blue_circle: Sensor: Damper Open Percentage (`sensor.<name>_damper_open_percentage`)
 A [**sensor**][hass-sensor] is created for the each zone to represent the current open percentage of the damper.
@@ -176,10 +202,15 @@ A dedicated sensor entity makes it easy to display the current open percentage i
 
 These entities can safely be disabled if you are not using them.
 
+<details>
+<summary>States and Attributes</summary>
+
 #### States
  State     | Description
 -----------|-------------
  `<value>` | The current damper open percentage. Range 0-100%<br>The damper open percentage does not take into account spill.
+
+</details>
 
 ### :twisted_rightwards_arrows: Sensor: Spill Percentage (`sensor.<name>_spill_percentage`)
 A [**sensor**][hass-sensor] is created for the each air-conditioner to represent the current spill percentage.
@@ -187,19 +218,29 @@ A [**sensor**][hass-sensor] is created for the each air-conditioner to represent
 This entity will only be created if one or more spill zones were selected during the integration configuration.
 For a system with one spill zone, the actual opening percentage of the zone will be the sum of the spill percentage and the current open percentage.
 
+<details>
+<summary>States and Attributes</summary>
+
 #### States
  State     | Description
 -----------|-------------
  `<value>` | The current spill percentage. The spill percentage may be >100% if there are multiple spill zones.
 
+</details>
+
 ### :battery: Binary Sensor: Battery (`binary_sensor.<zone_name>_battery`)
 A [**binary sensor**][hass-binary] is created for each zone with a temperature sensor to represent the battery state.
+
+<details>
+<summary>States and Attributes</summary>
 
 #### States
  State            | Description 
 ------------------|-------------
  `off` (`Normal`) | The temperature sensor battery is healthy.
  `on` (`Low`)     | The battery in the temperature sensor is getting low and will need to be replaced soon.
+
+</details>
 
 ### :twisted_rightwards_arrows: Binary Sensor: Spill/Bypass (`binary_sensor.<ac/zone_name>_spill/bypass`)
 A [**binary sensor**][hass-binary] is created for each air-conditioner and each zone to represent the spill or bypass state according to the configuration selected when the integration was set up.
@@ -209,16 +250,24 @@ If your system is set up to use one or more zones for spill, you will get a `bin
 
 Note: The bypass sensor is only created for the AirTouch 5. Bypass state is not available in the AirTouch 4 API.
 
+<details>
+<summary>States and Attributes</summary>
+
 #### States
  State            | Description 
 ------------------|-------------
  `off` (`Closed`) | The AC is not using spill/bypass, or the zone is not active as a spill zone.
  `on` (`Open`)    | The AC is in spill/bypass, or the zone is being used as a spill zone.
 
+</details>
+
 ### :arrow_up: Update: Console (`update.<airtouch_name>_console`)
 An [**update**][hass-update] entity is created to represent the software update status of the AirTouch Console.
 
 The AirTouch API doesn't provide information about the version of any updates, so the `latest_version` attribute just uses a fixed string when an update is available.
+
+<details>
+<summary>States and Attributes</summary>
 
 #### States
  State  | Description
@@ -231,6 +280,8 @@ The AirTouch API doesn't provide information about the version of any updates, s
 ---------------------|-------------
  `installed_version` | The current version of the AirTouch software.
  `latest_version`    | Matches `installed_version` if the software is update to date.<br>Value will be *"\<Update available>"* if an update is available.
+
+</details>
 
 ### :snowflake: Polyaire AirTouch: Set HVAC Mode (`airtouch.set_hvac_mode_only`)
 A service that sets the HVAC mode without changing the current power state.
@@ -254,6 +305,13 @@ data:
 target:
   entity_id: climate.panasonic
 ```
+
+## :hammer_and_wrench: Automation Blueprints
+
+### Damper to Temperature Control
+An automation blueprint to automatically reset AirTouch zones back to temperature control after they have been set to damper control for a configurable period of time.
+
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgist.github.com%2FTheNoctambulist%2F251584ad965a4d9721ad8c179eee1726)
 
 ## :yellow_heart: Say Thank You
 If you like this integration, please :star: the repository.
