@@ -55,14 +55,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             remote_host=entry.data.get(CONF_HOST)
         )
 
-    if not discovery_results:
-        # Couldn't find the AirTouch device.
-        # As a general rule this shouldn't happen because we are using discovery.
-        # However, it might happen if the AirTouch console is offline or the
-        # user configured with unicast discovery and the AirTouch console got a
-        # new IP address.
-        raise ConfigEntryNotReady
-
     # Filter the API instances to the AirTouch controller that matches this
     # config entry.
     airtouch = next(
@@ -70,11 +62,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
     if not airtouch:
         # Couldn't find the AirTouch device.
-        raise ConfigEntryNotReady
+        # As a general rule this shouldn't happen because we are using discovery.
+        # However, it might happen if the AirTouch console is offline or the
+        # user configured with unicast discovery and the AirTouch console got a
+        # new IP address.
+        raise ConfigEntryNotReady("AirTouch not detected on network")
 
     if not await airtouch.init():
         await airtouch.shutdown()
-        raise ConfigEntryNotReady
+        raise ConfigEntryNotReady("Error initialising AirTouch communication")
 
     # Save the API object for use throughout the integration
     hass.data[DOMAIN][entry.entry_id] = airtouch
