@@ -145,6 +145,8 @@ The climate entities for the zones can be used to:
 
 </details>
 
+If you call the `climate.set_temperature` service on climate entity, that zone will have its `control_method` set to `temperature` (ITC) mode. 
+
 ### :wind_face: Cover: Zone (`cover.<zone_name>_damper`)
 A [**cover**][hass-cover] entity is created for all zones (whether they have) to represent the current damper state.
 
@@ -170,6 +172,8 @@ The damper percentage can only be changed in increments of 5% to align with the 
  `current_position` | The current open percentage of the damper. 0 is closed, 100 is fully open.<br>Changing the damper percentage when a zone is in temperature control will automatically change it to a fixed damper position.<br>*Note:* The current open percentage reflects the AirTouch algorithm's intended position, it will not be accurate for a zone that is being used as a spill.
 
 </details>
+
+If you call the `cover.set_cover_position` service on cover entity, that zone will have its `control_method` set to `damper` (manual) mode. 
 
 #### Using Zones With Thermostat Cards
 If you're using the new Thermostat Card in recent versions of Home Assistant and want to enable the *Climate HVAC Modes* feature, some manual customisation is required to show the available HVAC modes correctly.
