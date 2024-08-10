@@ -337,7 +337,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
 
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
-    def __init__(  # noqa: PLR0913 disable too many arguments
+    def __init__(
         self,
         zone_device_info: devices.ZoneDevice,
         airtouch_ac: pyairtouch.AirConditioner,
