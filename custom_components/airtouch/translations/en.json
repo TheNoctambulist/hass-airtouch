@@ -84,6 +84,20 @@
           }
         }
       }
+    },
+    "sensor": {
+      "ac_active_fan_speed": {
+        "state": {
+          "auto": "Auto",
+          "quiet": "Quiet",
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High",
+          "powerful": "Powerful",
+          "turbo": "Turbo",
+          "intelligent": "Intelligent Auto"
+        }
+      }
     }
   },
   "services": {

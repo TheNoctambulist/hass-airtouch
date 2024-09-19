@@ -147,7 +147,8 @@ _AC_TO_CLIMATE_HVAC_ACTION = {
     pyairtouch.AcMode.COOL: climate.HVACAction.COOLING,
 }
 
-_AC_TO_CLIMATE_FAN_MODE = {
+# Public because it is also used in sensor.py
+AC_TO_CLIMATE_FAN_MODE = {
     pyairtouch.AcFanSpeed.AUTO: climate.FAN_AUTO,
     pyairtouch.AcFanSpeed.QUIET: "quiet",
     pyairtouch.AcFanSpeed.LOW: climate.FAN_LOW,
@@ -157,7 +158,7 @@ _AC_TO_CLIMATE_FAN_MODE = {
     pyairtouch.AcFanSpeed.TURBO: "turbo",
     pyairtouch.AcFanSpeed.INTELLIGENT_AUTO: "intelligent",
 }
-_CLIMATE_TO_AC_FAN_MODE = {value: key for key, value in _AC_TO_CLIMATE_FAN_MODE.items()}
+_CLIMATE_TO_AC_FAN_MODE = {value: key for key, value in AC_TO_CLIMATE_FAN_MODE.items()}
 
 
 class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
@@ -206,7 +207,7 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
             _AC_TO_CLIMATE_HVAC_MODE[mode] for mode in airtouch_ac.supported_modes
         ]
         self._attr_fan_modes = [
-            _AC_TO_CLIMATE_FAN_MODE[fan_speed]
+            AC_TO_CLIMATE_FAN_MODE[fan_speed]
             for fan_speed in airtouch_ac.supported_fan_speeds
         ]
 
@@ -234,7 +235,7 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
 
     @property
     def fan_mode(self) -> str:
-        return _AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.selected_fan_speed]
+        return AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.selected_fan_speed]
 
     @property
     def hvac_mode(self) -> climate.HVACMode:

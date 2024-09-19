@@ -14,7 +14,7 @@ from homeassistant.const import PERCENTAGE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import devices, entities
+from . import climate, devices, entities
 from .const import CONF_SPILL_ZONES, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,6 +40,14 @@ async def async_setup_entry(
             airtouch_ac=airtouch_ac,
         )
         discovered_entities.append(ac_temperature_entity)
+
+        # Active fan speed is only useful for systems the support intelligent auto.
+        if pyairtouch.AcFanSpeed.INTELLIGENT_AUTO in airtouch_ac.supported_fan_speeds:
+            ac_fan_speed_entity = AcActiveFanSpeedEntity(
+                ac_device=ac_device,
+                airtouch_ac=airtouch_ac,
+            )
+            discovered_entities.append(ac_fan_speed_entity)
 
         spill_zone_count = 0
 
@@ -93,6 +101,28 @@ class AcTemperatureEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
     @property
     def native_value(self) -> float:
         return self._airtouch_ac.current_temperature
+
+
+class AcActiveFanSpeedEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
+    """Sensor reporting the active fan speed of an air-conditioner."""
+
+    _attr_name = "Active Fan Speed"
+    _attr_device_class = sensor.SensorDeviceClass.ENUM
+    _attr_translation_key = "ac_active_fan_speed"
+
+    def __init__(
+        self, ac_device: devices.AcDevice, airtouch_ac: pyairtouch.AirConditioner
+    ) -> None:
+        super().__init__(
+            ac_device=ac_device,
+            airtouch_ac=airtouch_ac,
+            id_suffix="_active_fan_speed",
+        )
+        self._attr_options = list(climate.AC_TO_CLIMATE_FAN_MODE.values())
+
+    @property
+    def native_value(self) -> str:
+        return climate.AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.active_fan_speed]
 
 
 class ZoneTemperatureEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
