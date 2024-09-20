@@ -265,6 +265,23 @@ Note: The bypass sensor is only created for the AirTouch 5. Bypass state is not 
 
 </details>
 
+### :clock3: Time: On/Off Timer (`time.<ac_name>_<on/off>_timer`)
+Two [**time**][hass-time] entities are created for each air-conditioner to represent the state of the on and off quick timers.
+
+Updating the value of the time entity will set the corresponding quick timer for the air-conditioner.
+To clear an active timer, use the [Clear Timer](#-polyaire-airtouch-clear-timer-airtouchclear_timer) service.
+To set a timer to activate after a delay, use the [Set Timer (From Delay)](#-polyaire-airtouch-set-timer-from-delay-airtouchset_timer_from_delay) service.
+
+<details>
+<summary>States and Attributes</summary>
+
+#### States
+ State     | Description
+-----------|-------------
+ `<time>`  | The time at which the air-conditioner will be turned on or off.
+ `unknown` | Indicates that the quick timer is not set.
+</details>
+
 ### :arrow_up: Update: Console (`update.<airtouch_name>_console`)
 An [**update**][hass-update] entity is created to represent the software update status of the AirTouch Console.
 
@@ -310,6 +327,45 @@ target:
   entity_id: climate.panasonic
 ```
 
+### :clock3: Polyaire AirTouch: Set Timer (From Delay) (`airtouch.set_timer_from_delay`)
+A service that sets an air-conditioner quick timer.
+
+This service can be used to set the on or off quick timer for an air-conditioner to activate after a specified delay. To activate a timer at a fixed time, use the built-in `time.set_value` service.
+
+#### Fields
+ Field    | Description
+----------|-------------
+ `target` | The air-conditioner on/off timer to set.
+ `delay`  | The delay after which the timer should be activated.
+
+#### Example
+```yaml
+service: airtouch.set_timer_from_delay
+data:
+  delay:
+    hours: 1
+    minutes: 30
+target:
+  entity_id: time.panasonic_on_timer
+```
+
+### :clock3: Polyaire AirTouch: Clear Timer (`airtouch.clear_timer`)
+A service that clears an air-conditioner quick timer.
+
+If the timer is not active this service has no effect.
+
+#### Fields
+ Field    | Description
+----------|-------------
+ `target` | The AirTouch on/off timer to clear.
+
+#### Example
+```yaml
+service: airtouch.clear_timer
+target:
+  entity_id: time.panasonic_on_timer
+```
+
 ## :hammer_and_wrench: Automation Blueprints
 
 ### Damper to Temperature Control
@@ -337,6 +393,7 @@ If you would like to make a donation as appreciation of my work:
 [hass-cover]: https://www.home-assistant.io/integrations/cover/
 [hass-customizing-entities]: https://www.home-assistant.io/docs/configuration/customizing-devices/
 [hass-sensor]: https://www.home-assistant.io/integrations/sensor/
+[hass-time]: https://www.home-assistant.io/integrations/time/
 [hass-update]: https://www.home-assistant.io/integrations/update/
 [license-shield]: https://img.shields.io/github/license/thenoctambulist/hass-airtouch.svg
 [my-hass-add-integration-img]: https://my.home-assistant.io/badges/config_flow_start.svg

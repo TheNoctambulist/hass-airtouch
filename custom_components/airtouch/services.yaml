@@ -1,4 +1,6 @@
-# Describes the format for available airtouch services
+#
+# Climate Services
+#
 set_hvac_mode_only:
   target:
     entity:
@@ -17,3 +19,21 @@ set_hvac_mode_only:
             - "heat_cool"
             - "heat"
           translation_key: hvac_mode
+#
+# Time Services
+#
+clear_timer:
+  target:
+    entity:
+      integration: airtouch
+      domain: time
+set_timer_from_delay:
+  target:
+    entity:
+      integration: airtouch
+      domain: time
+  fields:
+    delay:
+      required: true
+      selector:
+        duration:

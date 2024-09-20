@@ -25,6 +25,8 @@
     }
   },
   "services": {
-    "set_hvac_mode_only": "mdi:thermostat"
+    "clear_timer": "mdi:fan-clock",
+    "set_hvac_mode_only": "mdi:thermostat",
+    "set_timer_from_duration": "mdi:fan-clock"
   }
 }

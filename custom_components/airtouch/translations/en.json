@@ -101,6 +101,10 @@
     }
   },
   "services": {
+    "clear_timer": {
+      "name": "Clear timer",
+      "description": "Clears an AirTouch quick timer."
+    },
     "set_hvac_mode_only": {
       "name": "Set HVAC mode",
       "description": "Sets HVAC mode without changing the current power state.",
@@ -108,6 +112,16 @@
         "hvac_mode": {
           "name": "HVAC mode",
           "description": "HVAC operation mode."
+        }
+      }
+    },
+    "set_timer_from_delay": {
+      "name": "Set timer (from delay)",
+      "description": "Set an AirTouch timer to trigger after a specified delay.",
+      "fields": {
+        "delay": {
+          "name": "Delay",
+          "description": "Delay after which the timer should be triggered."
         }
       }
     }
