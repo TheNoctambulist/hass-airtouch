@@ -114,7 +114,12 @@ class BaseDevice:
         # Compatibility: Before 2024.4
         if hasattr(area_registry, "normalize_area_name"):
             return cast(str, area_registry.normalize_area_name(name))
-        return area_registry.normalize_name(name)
+
+        from homeassistant.helpers.normalized_name_base_registry import (
+            normalize_name,
+        )
+
+        return normalize_name(name)
 
 
 class ZoneDevice(BaseDevice):
