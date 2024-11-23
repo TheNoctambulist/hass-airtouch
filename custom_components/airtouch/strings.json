@@ -22,7 +22,10 @@
       },
       "spill_zones": {
         "title": "Select spill zones",
-        "description": "Select the zones that are used as spill zones.\nIf you are unsure, leave all zones unselected."
+        "description": "Select the zones that are used as spill zones.\nIf you are unsure, leave all zones unselected.",
+        "data": {
+          "spill_zones": "Spill Zone(s)"
+        }
       },
       "finalise": {
         "title": "More than one AirTouch found",
