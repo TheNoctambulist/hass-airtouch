@@ -32,8 +32,6 @@ validate-manifest = { cmd = [
 select = ["ALL"] # We'll disable specific rules where appropriate.
 
 ignore = [
-    "ANN101", # Don't require typing for self
-    "ANN102", # Don't require typing for cls
     "D102",   # This is not a public API
     "D107",   # Don't require documentation for all __init__ functions
     "D417",   # Don't force every argument to be documented

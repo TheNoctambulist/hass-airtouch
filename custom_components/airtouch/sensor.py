@@ -99,7 +99,7 @@ class AcTemperatureEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
         )
 
     @property
-    def native_value(self) -> float:
+    def native_value(self) -> float:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
         return self._airtouch_ac.current_temperature
 
 
@@ -121,7 +121,7 @@ class AcActiveFanSpeedEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
         self._attr_options = list(climate.AC_TO_CLIMATE_FAN_MODE.values())
 
     @property
-    def native_value(self) -> str:
+    def native_value(self) -> str:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
         return climate.AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.active_fan_speed]
 
 
@@ -143,7 +143,7 @@ class ZoneTemperatureEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
         )
 
     @property
-    def native_value(self) -> float | None:
+    def native_value(self) -> float | None:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
         return self._airtouch_zone.current_temperature
 
 
@@ -165,7 +165,7 @@ class ZonePercentageEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
         )
 
     @property
-    def native_value(self) -> int:
+    def native_value(self) -> int:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             # Force the value to zero when the zone is turned off to have a more
             # accurate record of zone damper percentage history.
@@ -202,7 +202,7 @@ class SpillPercentageEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
         self._spill_percentage_limit = spill_zone_count * 100
 
     @property
-    def native_value(self) -> int:
+    def native_value(self) -> int:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
         if self._airtouch_ac.power_state in [
             pyairtouch.AcPowerState.OFF,
             pyairtouch.AcPowerState.OFF_AWAY,

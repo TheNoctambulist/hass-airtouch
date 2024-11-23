@@ -73,7 +73,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             remote_host: optional remote host to target for discovery.
         """
         # Save the current remote host as context for other steps
-        self.context[CONF_HOST] = remote_host
+        self.context[CONF_HOST] = remote_host  # type: ignore[literal-required]
 
         discovered_airtouches = await pyairtouch.discover(remote_host)
         airtouches = self._filter_unconfigured(discovered_airtouches)
@@ -83,9 +83,9 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # last one in the list. The user will need to run the config flow
             # again to add the other AirTouch devices.
             airtouch = airtouches.pop()
-            self.context[_CONTEXT_TITLE] = airtouch.name
-            self.context[_CONTEXT_AIRTOUCH_API] = airtouch
-            self.context[_CONTEXT_REMAINING_AIRTOUCHES] = airtouches
+            self.context[_CONTEXT_TITLE] = airtouch.name  # type: ignore[literal-required]
+            self.context[_CONTEXT_AIRTOUCH_API] = airtouch  # type: ignore[literal-required]
+            self.context[_CONTEXT_REMAINING_AIRTOUCHES] = airtouches  # type: ignore[literal-required]
 
             await self.async_set_unique_id(airtouch.airtouch_id)
 
@@ -116,7 +116,8 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data_schema=vol.Schema(
                     schema={
                         vol.Required(
-                            CONF_HOST, default=self.context.get(CONF_HOST)
+                            CONF_HOST,
+                            default=self.context.get(CONF_HOST),
                         ): str,
                     }
                 ),
@@ -133,7 +134,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_show_form(
                 step_id="settings",
                 description_placeholders={
-                    "airtouch_name": self.context[_CONTEXT_TITLE],
+                    "airtouch_name": self.context[_CONTEXT_TITLE],  # type: ignore[literal-required]
                 },
                 data_schema=vol.Schema(
                     schema={
@@ -153,23 +154,23 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ),
             )
 
-        self.context[OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES] = info[
+        self.context[OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES] = info[  # type: ignore[literal-required]
             OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES
         ]
-        self.context[CONF_SPILL_BYPASS] = SpillBypass(info[CONF_SPILL_BYPASS])
+        self.context[CONF_SPILL_BYPASS] = SpillBypass(info[CONF_SPILL_BYPASS])  # type: ignore[literal-required]
         return await self.async_step_spill_zones()
 
     async def async_step_spill_zones(
         self,
         info: dict[str, Any] | None = None,
     ) -> "config_entries.ConfigFlowResult":
-        spill_bypass = self.context[CONF_SPILL_BYPASS]
+        spill_bypass = self.context[CONF_SPILL_BYPASS]  # type: ignore[literal-required]
         if spill_bypass == SpillBypass.BYPASS:
             info = {CONF_SPILL_ZONES: []}
 
         if not info:
             zone_options: list[selector.SelectOptionDict] = []
-            airtouch: pyairtouch.AirTouch = self.context[_CONTEXT_AIRTOUCH_API]
+            airtouch: pyairtouch.AirTouch = self.context[_CONTEXT_AIRTOUCH_API]  # type: ignore[literal-required]
 
             await airtouch.init()
 
@@ -199,14 +200,14 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ),
             )
 
-        self.context[CONF_SPILL_ZONES] = [int(z) for z in info[CONF_SPILL_ZONES]]
+        self.context[CONF_SPILL_ZONES] = [int(z) for z in info[CONF_SPILL_ZONES]]  # type: ignore[literal-required]
 
         return await self.async_step_finalise()
 
     async def async_step_finalise(
         self, info: dict[str, Any] | None = None
     ) -> "config_entries.ConfigFlowResult":
-        if info is None and self.context[_CONTEXT_REMAINING_AIRTOUCHES]:
+        if info is None and self.context[_CONTEXT_REMAINING_AIRTOUCHES]:  # type: ignore[literal-required]
             # Show an empty form just so that we can put a title and description
             # to notify the user that additional AirTouches have been
             # discovered.
@@ -215,15 +216,15 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
         return self.async_create_entry(
-            title=self.context[_CONTEXT_TITLE],
+            title=self.context[_CONTEXT_TITLE],  # type: ignore[literal-required]
             data={
-                CONF_HOST: self.context[CONF_HOST],
-                CONF_SPILL_BYPASS: self.context[CONF_SPILL_BYPASS],
-                CONF_SPILL_ZONES: self.context[CONF_SPILL_ZONES],
+                CONF_HOST: self.context[CONF_HOST],  # type: ignore[literal-required]
+                CONF_SPILL_BYPASS: self.context[CONF_SPILL_BYPASS],  # type: ignore[literal-required]
+                CONF_SPILL_ZONES: self.context[CONF_SPILL_ZONES],  # type: ignore[literal-required]
             },
             options={
                 OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES: self.context[
-                    OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES
+                    OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES  # type: ignore[literal-required]
                 ]
             },
         )
@@ -256,7 +257,7 @@ class AirTouchOptionsFlow(config_entries.OptionsFlow):
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
-    ) -> config_entries.FlowResult:
+    ) -> config_entries.ConfigFlowResult:
         if user_input is not None:
             # Convert to float for storage
             user_input[OPTIONS_MIN_TARGET_TEMPERATURE_STEP] = float(

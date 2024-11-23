@@ -85,7 +85,7 @@ class AcQuickTimerEntity(entities.AirTouchAcEntity, time.TimeEntity):
         self._attr_name = _TIMER_TYPE_NAME_MAPPING[timer_type]
 
     @property
-    def native_value(self) -> datetime.time | None:
+    def native_value(self) -> datetime.time | None:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
         return self._airtouch_ac.next_quick_timer(self._timer_type)
 
     async def async_set_value(self, value: datetime.time) -> None:
