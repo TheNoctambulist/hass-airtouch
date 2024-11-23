@@ -28,12 +28,8 @@ The built-in integrations are not required for the custom integration to work.
 <summary>Click to expand installation steps...</summary>
 
 ### HACS (Preferred)
-This integration can be added to Home Assistant as a [custom HACS repository](https://hacs.xyz/docs/faq/custom_repositories):
-1. From the HACS page, click the 3 dots at the top right corner.
-1. Select `Custom repositories`.
-1. Add the URL `https://github.com/thenoctambulist/hass-airtouch`
-1. Select the category `Integration`.
-1. Click the ADD button.
+This integration can be added to Home Assistant using HACS:
+1. From the HACS page, search for `Polyaire AirTouch` and [download the repository](https://hacs.xyz/docs/use/repositories/dashboard/#downloading-a-repository).
 1. Restart Home Assistant
 1. Click the button below, or in the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Polyaire AirTouch"
 
@@ -387,7 +383,7 @@ If you would like to make a donation as appreciation of my work:
 [polyaire-airtouch]: https://www.airtouch.net.au/
 [commits-shield]: https://img.shields.io/github/commit-activity/y/thenoctambulist/hass-airtouch.svg
 [commits]: https://github.com/thenoctambulist/hass-airtouch/commits/main
-[hacs-shield]: https://img.shields.io/badge/HACS-Custom-blue.svg
+[hacs-shield]: https://img.shields.io/badge/HACS-Default-blue.svg
 [hass-binary]: https://www.home-assistant.io/integrations/binary_sensor/
 [hass-climate]: https://www.home-assistant.io/integrations/climate/
 [hass-cover]: https://www.home-assistant.io/integrations/cover/
