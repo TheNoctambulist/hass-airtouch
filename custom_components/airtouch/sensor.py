@@ -6,6 +6,7 @@ Sensors are used to represent:
 """
 
 import logging
+from typing import Any
 
 import pyairtouch
 from homeassistant.components import sensor
@@ -40,6 +41,12 @@ async def async_setup_entry(
             airtouch_ac=airtouch_ac,
         )
         discovered_entities.append(ac_temperature_entity)
+
+        ac_error_entity = AcErrorEntity(
+            ac_device=ac_device,
+            airtouch_ac=airtouch_ac,
+        )
+        discovered_entities.append(ac_error_entity)
 
         # Active fan speed is only useful for systems the support intelligent auto.
         if pyairtouch.AcFanSpeed.INTELLIGENT_AUTO in airtouch_ac.supported_fan_speeds:
@@ -123,6 +130,36 @@ class AcActiveFanSpeedEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
     @property
     def native_value(self) -> str:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
         return climate.AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.active_fan_speed]
+
+
+class AcErrorEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
+    """Sensor reporting the error state of an air-conditioner."""
+
+    _attr_name = "Error Code"
+    _attr_device_class = None  # No appropriate device classes are available.
+
+    def __init__(
+        self, ac_device: devices.AcDevice, airtouch_ac: pyairtouch.AirConditioner
+    ) -> None:
+        super().__init__(
+            ac_device=ac_device, airtouch_ac=airtouch_ac, id_suffix="_error"
+        )
+
+    @property
+    def native_value(self) -> int | None:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+        error_info = self._airtouch_ac.error_info
+        if error_info:
+            return error_info.code
+        return None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+        error_description = None
+        error_info = self._airtouch_ac.error_info
+        if error_info:
+            error_description = error_info.description
+
+        return {"error_description": error_description}
 
 
 class ZoneTemperatureEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):

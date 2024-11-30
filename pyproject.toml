@@ -3,7 +3,7 @@ name = "hass-airtouch"
 version = "0.2.0"
 description = "Default template for PDM package"
 authors = [{ name = "TheNoctambulist", email = "thenoctambulist@zoho.com" }]
-dependencies = ["homeassistant>=2023.12.4", "pyairtouch>=0.8.1"]
+dependencies = ["homeassistant>=2023.12.4", "pyairtouch>=2.1.0"]
 requires-python = ">=3.12,<3.13"
 readme = "README.md"
 license = { text = "MIT" }

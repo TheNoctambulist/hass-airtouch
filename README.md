@@ -228,6 +228,24 @@ For a system with one spill zone, the actual opening percentage of the zone will
 
 </details>
 
+### :x: Sensor: Error Code (`sensor.<name>_error_code`)
+A [**sensor**][hass-sensor] is created for each air-conditioner to publish any reported error codes.
+
+<details>
+<summary>States and Attributes</summary>
+
+#### States
+ State     | Description
+-----------|-------------
+ `<value>` | The current AC error code. `Unknown` if the AC is not currently reporting an error.
+
+#### Attributes
+ Attribute           | Description
+---------------------|-------------
+ `error_description` | A short string containing more detailed error information provided by the AirTouch console.
+
+</details>
+
 ### :battery: Binary Sensor: Battery (`binary_sensor.<zone_name>_battery`)
 A [**binary sensor**][hass-binary] is created for each zone with a temperature sensor to represent the battery state.
 
