@@ -132,11 +132,15 @@ class AcActiveFanSpeedEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
         return climate.AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.active_fan_speed]
 
 
+_NO_ERROR = "none"
+
+
 class AcErrorEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
     """Sensor reporting the error state of an air-conditioner."""
 
     _attr_name = "Error Code"
     _attr_device_class = None  # No appropriate device classes are available.
+    _attr_translation_key = "ac_error_code"
 
     def __init__(
         self, ac_device: devices.AcDevice, airtouch_ac: pyairtouch.AirConditioner
@@ -146,15 +150,15 @@ class AcErrorEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
         )
 
     @property
-    def native_value(self) -> int | None:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def native_value(self) -> int | str:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
         error_info = self._airtouch_ac.error_info
         if error_info:
             return error_info.code
-        return None
+        return _NO_ERROR
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
-        error_description = None
+        error_description: str | None = _NO_ERROR
         error_info = self._airtouch_ac.error_info
         if error_info:
             error_description = error_info.description

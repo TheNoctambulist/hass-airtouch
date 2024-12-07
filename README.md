@@ -237,7 +237,8 @@ A [**sensor**][hass-sensor] is created for each air-conditioner to publish any r
 #### States
  State     | Description
 -----------|-------------
- `<value>` | The current AC error code. `Unknown` if the AC is not currently reporting an error.
+ `<value>` | The current AC error code.
+ `none`    |  If the AC is not currently reporting an error.
 
 #### Attributes
  Attribute           | Description

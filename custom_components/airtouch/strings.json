@@ -100,6 +100,18 @@
           "turbo": "Turbo",
           "intelligent": "Intelligent Auto"
         }
+      },
+      "ac_error_code": {
+        "state": {
+          "none": "None"
+        },
+        "state_attributes": {
+          "error_description": {
+            "state": {
+              "none": "None"
+            }
+          }
+        }
       }
     }
   },
