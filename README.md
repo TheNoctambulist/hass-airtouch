@@ -153,6 +153,8 @@ The cover entity for zones can be used to:
 
 The damper percentage can only be changed in increments of 5% to align with the official app.
 
+Calling the `cover.set_cover_position` action on a zone that is currently turned off will automatically turn the zone one.
+
 <details>
 <summary>States and Attributes</summary>
 

@@ -95,3 +95,12 @@ class ZoneDamperEntity(entities.AirTouchZoneEntity, cover.CoverEntity):
         open_percentage: int = kwargs[cover.ATTR_POSITION]
         open_percentage = _DAMPER_STEP * round(open_percentage / _DAMPER_STEP)
         await self._airtouch_zone.set_damper_percentage(open_percentage)
+
+        # Automatically turn the zone on if the damper position is being opened,
+        # otherwise the damper position change won't be reflected in the next
+        # state update.
+        if (
+            open_percentage > 0
+            and self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF
+        ):
+            await self._airtouch_zone.set_power(pyairtouch.ZonePowerState.ON)
