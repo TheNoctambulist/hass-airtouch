@@ -1242,7 +1242,7 @@ files = [
 
 [[package]]
 name = "pyairtouch"
-version = "2.1.1"
+version = "2.1.2"
 requires_python = ">=3.11"
 summary = "A fully typed asyncio API for the Polyaire AirTouch AC controllers"
 groups = ["default"]
@@ -1250,8 +1250,8 @@ dependencies = [
     "typing-extensions>=4.9.0",
 ]
 files = [
-    {file = "pyairtouch-2.1.1-py3-none-any.whl", hash = "sha256:04a1b68f453c13bdcf8be283cd03e8122fab74c92f95e317707a785ed2cf8bb6"},
-    {file = "pyairtouch-2.1.1.tar.gz", hash = "sha256:f3e23cbb8d62f6353043304e72c0ed5dddd65dc2b8e6ad2fc3aaf6cdcfd8acd6"},
+    {file = "pyairtouch-2.1.2-py3-none-any.whl", hash = "sha256:751849f2d7e15d6ae45d87dd8742a22202a64675997faadb48d852fc46dfd89c"},
+    {file = "pyairtouch-2.1.2.tar.gz", hash = "sha256:f322b3b9cc6d09a740915e56fb139618ca263b84763576cbb73858760644a756"},
 ]
 
 [[package]]
