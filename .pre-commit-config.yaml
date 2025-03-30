@@ -26,5 +26,5 @@ repos:
         name: Validating manifest
         language: system
         entry: pdm run validate-manifest
-        files: '^(pdm\.lock|manifest\.json)$'
+        files: '(pdm\.lock|manifest\.json)$'
         pass_filenames: false
