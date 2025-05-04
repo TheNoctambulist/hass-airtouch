@@ -113,7 +113,7 @@ class BaseDevice:
     def _normalize_name(self, name: str) -> str:
         # Compatibility: Before 2024.4
         if hasattr(area_registry, "normalize_area_name"):
-            return cast(str, area_registry.normalize_area_name(name))
+            return cast("str", area_registry.normalize_area_name(name))
 
         from homeassistant.helpers.normalized_name_base_registry import (
             normalize_name,

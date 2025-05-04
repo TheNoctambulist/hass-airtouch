@@ -74,13 +74,13 @@ class ZoneDamperEntity(entities.AirTouchZoneEntity, cover.CoverEntity):
         )
 
     @property
-    def current_cover_position(self) -> int | None:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def current_cover_position(self) -> int | None:
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             return 0
         return self._airtouch_zone.current_damper_percentage
 
     @property
-    def is_closed(self) -> Optional[bool]:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def is_closed(self) -> Optional[bool]:
         return self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF
 
     async def async_open_cover(self, **_: Any) -> None:  # noqa: ANN401

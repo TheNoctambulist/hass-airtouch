@@ -53,14 +53,14 @@ class AirtouchUpdateEntity(entities.AirTouchConsoleEntity, update.UpdateEntity):
         super().__init__(airtouch_device=airtouch_device, airtouch=airtouch)
 
     @property
-    def installed_version(self) -> Optional[str]:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def installed_version(self) -> Optional[str]:
         if self._airtouch.console_versions:
             # The first entry is the master-console version
             return self._airtouch.console_versions[0]
         return None
 
     @property
-    def latest_version(self) -> Optional[str]:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def latest_version(self) -> Optional[str]:
         if self._airtouch.update_available:
             # The latest version number is not available, returning any string
             # here is sufficient for Home Assistant to mark the entity as "On"

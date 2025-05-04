@@ -44,7 +44,7 @@ class AirTouchConsoleEntity(Entity):
         """Return a basic string representation of the entity."""
         device_name: str = "<Unknown>"
         if self._attr_device_info:
-            device_name = cast(str, self._attr_device_info.get("name", device_name))
+            device_name = cast("str", self._attr_device_info.get("name", device_name))
         return f"<{self.__class__.__name__}: {device_name} ({self._attr_unique_id})>"
 
 
@@ -93,7 +93,7 @@ class AirTouchAcEntity(Entity):
         """Return a basic string representation of the entity."""
         device_name: str = "<Unknown>"
         if self._attr_device_info:
-            device_name = cast(str, self._attr_device_info.get("name", device_name))
+            device_name = cast("str", self._attr_device_info.get("name", device_name))
         return f"<{self.__class__.__name__}: {device_name} ({self._attr_unique_id})>"
 
 
@@ -133,5 +133,5 @@ class AirTouchZoneEntity(Entity):
         """Return a basic string representation of the entity."""
         device_name: str = "<Unknown>"
         if self._attr_device_info:
-            device_name = cast(str, self._attr_device_info.get("name", device_name))
+            device_name = cast("str", self._attr_device_info.get("name", device_name))
         return f"<{self.__class__.__name__}: {device_name} ({self._attr_unique_id})>"

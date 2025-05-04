@@ -218,27 +218,27 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
         ]
 
     @property
-    def current_temperature(self) -> Optional[float]:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def current_temperature(self) -> Optional[float]:
         return self._airtouch_ac.current_temperature
 
     @property
-    def target_temperature(self) -> Optional[float]:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def target_temperature(self) -> Optional[float]:
         return self._airtouch_ac.target_temperature
 
     @property
-    def max_temp(self) -> float:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def max_temp(self) -> float:
         return self._airtouch_ac.max_target_temperature
 
     @property
-    def min_temp(self) -> float:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def min_temp(self) -> float:
         return self._airtouch_ac.min_target_temperature
 
     @property
-    def fan_mode(self) -> str:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def fan_mode(self) -> str:
         return AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.selected_fan_speed]
 
     @property
-    def hvac_mode(self) -> climate.HVACMode:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def hvac_mode(self) -> climate.HVACMode:
         match self._airtouch_ac.power_state:
             case pyairtouch.AcPowerState.OFF | pyairtouch.AcPowerState.OFF_AWAY:
                 return climate.HVACMode.OFF
@@ -246,7 +246,7 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
                 return _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode]
 
     @property
-    def hvac_action(self) -> climate.HVACAction:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def hvac_action(self) -> climate.HVACAction:
         match self._airtouch_ac.power_state:
             case pyairtouch.AcPowerState.OFF | pyairtouch.AcPowerState.OFF_AWAY:
                 return climate.HVACAction.OFF
@@ -254,11 +254,11 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
                 return _AC_TO_CLIMATE_HVAC_ACTION[self._airtouch_ac.active_mode]
 
     @property
-    def preset_mode(self) -> str:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def preset_mode(self) -> str:
         return _AC_POWER_STATE_TO_PRESET[self._airtouch_ac.power_state]
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def extra_state_attributes(self) -> dict[str, Any]:
         """Return AC specific state attributes."""
         return {
             # The "current" HVAC mode
@@ -387,7 +387,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         self._airtouch_ac.unsubscribe_ac_state(self._async_on_ac_update)
 
     @property
-    def hvac_modes(self) -> list[climate.HVACMode]:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def hvac_modes(self) -> list[climate.HVACMode]:
         if self._allow_zone_hvac_mode_changes:
             return self._attr_hvac_modes
         # otherwises the Zone can either be off, or on in the current mode of the AC
@@ -397,27 +397,27 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         ]
 
     @property
-    def current_temperature(self) -> Optional[float]:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def current_temperature(self) -> Optional[float]:
         return self._airtouch_zone.current_temperature
 
     @property
-    def target_temperature(self) -> Optional[float]:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def target_temperature(self) -> Optional[float]:
         return self._airtouch_zone.target_temperature
 
     @property
-    def max_temp(self) -> float:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def max_temp(self) -> float:
         return self._airtouch_ac.max_target_temperature
 
     @property
-    def min_temp(self) -> float:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def min_temp(self) -> float:
         return self._airtouch_ac.min_target_temperature
 
     @property
-    def fan_mode(self) -> str:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def fan_mode(self) -> str:
         return _ZONE_TO_CLIMATE_FAN_MODE[self._airtouch_zone.power_state]
 
     @property
-    def hvac_mode(self) -> climate.HVACMode:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def hvac_mode(self) -> climate.HVACMode:
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             return climate.HVACMode.OFF
 
@@ -429,7 +429,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
                 return _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode]
 
     @property
-    def hvac_action(self) -> climate.HVACAction:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def hvac_action(self) -> climate.HVACAction:
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             return climate.HVACAction.OFF
 
@@ -441,7 +441,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
                 return _AC_TO_CLIMATE_HVAC_ACTION[self._airtouch_ac.active_mode]
 
     @property
-    def extra_state_attributes(self) -> Optional[Mapping[str, Any]]:  # type: ignore[override] # MyPy reports an error here even though the signature is identical!
+    def extra_state_attributes(self) -> Optional[Mapping[str, Any]]:
         # Add the control method as an attribute so that this can be seen in
         # Home Assistant. It's unlikely to change often but potentially useful
         # for automations.
