@@ -253,7 +253,14 @@ class AirTouchOptionsFlow(config_entries.OptionsFlow):
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialise the options flow."""
-        self.config_entry = config_entry
+        # Compatibility: Before 2024.12
+        # The config_entry constructor parameter can be removed once this
+        # backwards compatibility support is removed.
+        # Needs to use `dir` because `hasattr` invokes the propery and triggers an
+        # exception due to self.config_entry not being permitted for use within
+        # the initialiser.
+        if "config_entry" not in dir(self):
+            self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
