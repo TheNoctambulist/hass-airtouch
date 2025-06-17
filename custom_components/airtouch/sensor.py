@@ -128,8 +128,10 @@ class AcActiveFanSpeedEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
         self._attr_options = list(climate.AC_TO_CLIMATE_FAN_MODE.values())
 
     @property
-    def native_value(self) -> str:
-        return climate.AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.active_fan_speed]
+    def native_value(self) -> str | None:
+        if self._airtouch_ac.active_fan_speed:
+            return climate.AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.active_fan_speed]
+        return None
 
 
 _NO_ERROR = "none"
