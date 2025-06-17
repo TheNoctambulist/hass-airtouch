@@ -234,37 +234,50 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
         return self._airtouch_ac.min_target_temperature
 
     @property
-    def fan_mode(self) -> str:
-        return AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.selected_fan_speed]
+    def fan_mode(self) -> str | None:
+        if self._airtouch_ac.selected_fan_speed:
+            return AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.selected_fan_speed]
+        return None
 
     @property
-    def hvac_mode(self) -> climate.HVACMode:
+    def hvac_mode(self) -> climate.HVACMode | None:
         match self._airtouch_ac.power_state:
             case pyairtouch.AcPowerState.OFF | pyairtouch.AcPowerState.OFF_AWAY:
                 return climate.HVACMode.OFF
             case _:
-                return _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode]
+                if self._airtouch_ac.selected_mode:
+                    return _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode]
+        return None
 
     @property
-    def hvac_action(self) -> climate.HVACAction:
+    def hvac_action(self) -> climate.HVACAction | None:
         match self._airtouch_ac.power_state:
             case pyairtouch.AcPowerState.OFF | pyairtouch.AcPowerState.OFF_AWAY:
                 return climate.HVACAction.OFF
+            case pyairtouch.AcPowerState.OFF_FORCED:
+                return climate.HVACAction.IDLE
             case _:
-                return _AC_TO_CLIMATE_HVAC_ACTION[self._airtouch_ac.active_mode]
+                if self._airtouch_ac.active_mode:
+                    return _AC_TO_CLIMATE_HVAC_ACTION[self._airtouch_ac.active_mode]
+        return None
 
     @property
     def preset_mode(self) -> str:
-        return _AC_POWER_STATE_TO_PRESET[self._airtouch_ac.power_state]
+        if self._airtouch_ac.power_state:
+            return _AC_POWER_STATE_TO_PRESET[self._airtouch_ac.power_state]
+        return climate.PRESET_NONE
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return AC specific state attributes."""
-        return {
-            # The "current" HVAC mode
-            "last_active_hvac_mode": _AC_TO_CLIMATE_HVAC_MODE[
+        last_active_hvac_mode: climate.HVACMode | None = None
+        if self._airtouch_ac.selected_mode:
+            last_active_hvac_mode = _AC_TO_CLIMATE_HVAC_MODE[
                 self._airtouch_ac.selected_mode
             ]
+        return {
+            # The "current" HVAC mode
+            "last_active_hvac_mode": last_active_hvac_mode
         }
 
     def update_min_target_temperature_step(self, min_step: float) -> None:
@@ -391,6 +404,10 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         if self._allow_zone_hvac_mode_changes:
             return self._attr_hvac_modes
         # otherwises the Zone can either be off, or on in the current mode of the AC
+        if self._airtouch_ac.selected_mode is None:
+            return [
+                climate.HVACMode.OFF,
+            ]
         return [
             climate.HVACMode.OFF,
             _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode],
@@ -413,11 +430,13 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         return self._airtouch_ac.min_target_temperature
 
     @property
-    def fan_mode(self) -> str:
-        return _ZONE_TO_CLIMATE_FAN_MODE[self._airtouch_zone.power_state]
+    def fan_mode(self) -> str | None:
+        if self._airtouch_zone.power_state:
+            return _ZONE_TO_CLIMATE_FAN_MODE[self._airtouch_zone.power_state]
+        return None
 
     @property
-    def hvac_mode(self) -> climate.HVACMode:
+    def hvac_mode(self) -> climate.HVACMode | None:
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             return climate.HVACMode.OFF
 
@@ -426,10 +445,12 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
             case pyairtouch.AcPowerState.OFF | pyairtouch.AcPowerState.OFF_AWAY:
                 return climate.HVACMode.OFF
             case _:
-                return _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode]
+                if self._airtouch_ac.selected_mode:
+                    return _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode]
+        return None
 
     @property
-    def hvac_action(self) -> climate.HVACAction:
+    def hvac_action(self) -> climate.HVACAction | None:
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             return climate.HVACAction.OFF
 
@@ -437,8 +458,12 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         match self._airtouch_ac.power_state:
             case pyairtouch.AcPowerState.OFF | pyairtouch.AcPowerState.OFF_AWAY:
                 return climate.HVACAction.OFF
+            case pyairtouch.AcPowerState.OFF_FORCED:
+                return climate.HVACAction.IDLE
             case _:
-                return _AC_TO_CLIMATE_HVAC_ACTION[self._airtouch_ac.active_mode]
+                if self._airtouch_ac.active_mode:
+                    return _AC_TO_CLIMATE_HVAC_ACTION[self._airtouch_ac.active_mode]
+        return None
 
     @property
     def extra_state_attributes(self) -> Optional[Mapping[str, Any]]:
@@ -498,6 +523,8 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         # Turn the zone on by activating it according to the current mode of the
         # AirTouch AC. This will always be an "on" mode even if the AC is turned
         # off.
+        if self._airtouch_ac.selected_mode is None:
+            raise RuntimeError("AC Mode is unknown")
         await self.async_set_hvac_mode(
             _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode]
         )
