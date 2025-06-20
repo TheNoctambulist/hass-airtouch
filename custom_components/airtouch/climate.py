@@ -112,6 +112,7 @@ async def async_setup_entry(
 
 _AC_POWER_STATE_TO_PRESET = {
     pyairtouch.AcPowerState.OFF: climate.PRESET_NONE,
+    pyairtouch.AcPowerState.OFF_FORCED: climate.PRESET_NONE,
     pyairtouch.AcPowerState.ON: climate.PRESET_NONE,
     pyairtouch.AcPowerState.OFF_AWAY: climate.PRESET_AWAY,
     pyairtouch.AcPowerState.ON_AWAY: climate.PRESET_AWAY,

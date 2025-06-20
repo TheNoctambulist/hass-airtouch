@@ -249,6 +249,7 @@ class SpillPercentageEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
         if self._airtouch_ac.power_state in [
             pyairtouch.AcPowerState.OFF,
             pyairtouch.AcPowerState.OFF_AWAY,
+            pyairtouch.AcPowerState.OFF_FORCED,
         ]:
             return 0
 
