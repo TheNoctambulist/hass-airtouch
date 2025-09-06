@@ -16,7 +16,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import climate, devices, entities
-from .const import CONF_SPILL_ZONES, DOMAIN
+from .const import CONF_SPILL_BYPASS, CONF_SPILL_ZONES, DOMAIN, SpillBypass
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,6 +29,12 @@ async def async_setup_entry(
     """Set up the AirTouch sensors."""
     airtouch: pyairtouch.AirTouch = hass.data[DOMAIN][config_entry.entry_id]
 
+    # When reading serialised configuration, the config data will be the
+    # underlying value not the enum value so it needs to be converted to an enum
+    # literal for future comparisons.
+    spill_bypass = SpillBypass(
+        config_entry.data.get(CONF_SPILL_BYPASS, SpillBypass.SPILL)
+    )
     spill_zones: list[int] = config_entry.data.get(CONF_SPILL_ZONES, [])
 
     discovered_entities: list[sensor.SensorEntity] = []
@@ -76,13 +82,23 @@ async def async_setup_entry(
             if airtouch_zone.zone_id in spill_zones:
                 spill_zone_count += 1
 
+        if (
+            spill_bypass == SpillBypass.BYPASS
+            and airtouch.model == pyairtouch.AirTouchModel.AIRTOUCH_5
+        ):
+            # The AirTouch 5 supports fractional bypass so we can create a
+            # bypass percentage sensor. The logic is the same as having a single
+            # spill zone.
+            spill_zone_count = 1
+
         if spill_zone_count > 0:
-            ac_spill_percentage_entity = SpillPercentageEntity(
+            ac_spill_bypass_percentage_entity = SpillBypassPercentageEntity(
+                spill_bypass=spill_bypass,
                 ac_device=ac_device,
                 airtouch_ac=airtouch_ac,
                 spill_zone_count=spill_zone_count,
             )
-            discovered_entities.append(ac_spill_percentage_entity)
+            discovered_entities.append(ac_spill_bypass_percentage_entity)
 
     _LOGGER.debug("Found entities: %s", discovered_entities)
     async_add_devices(discovered_entities)
@@ -216,19 +232,19 @@ class ZonePercentageEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
         return self._airtouch_zone.current_damper_percentage
 
 
-class SpillPercentageEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
-    """Sensor reporting the current spill percentage for an AC.
+class SpillBypassPercentageEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
+    """Sensor reporting the current spill/bypass percentage for an AC.
 
     The value may be greater than 100% for ACs with multiple spill zones.
     """
 
-    _attr_name = "Spill Percentage"
     _attr_device_class = None  # No appropriate device classes are available
     _attr_native_unit_of_measurement = PERCENTAGE
     _attr_state_class = sensor.SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
+        spill_bypass: SpillBypass,
         ac_device: devices.AcDevice,
         airtouch_ac: pyairtouch.AirConditioner,
         spill_zone_count: int,
@@ -236,9 +252,20 @@ class SpillPercentageEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
         super().__init__(
             ac_device=ac_device,
             airtouch_ac=airtouch_ac,
-            id_suffix="_spill_percentage",
+            id_suffix=(
+                "_bypass_percentage"
+                if spill_bypass == SpillBypass.BYPASS
+                else "_spill_percentage"
+            ),
             include_zone_subscription=True,
         )
+
+        self._attr_name = (
+            "Bypass Percentage"
+            if spill_bypass == SpillBypass.BYPASS
+            else "Spill Percentage"
+        )
+
         # The AirTouch algorithm will always ensure that the sum of zone opening
         # percentages remains a minimum opening percentage of:
         #    spill_zone_count * 100

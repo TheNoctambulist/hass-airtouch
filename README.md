@@ -214,10 +214,10 @@ These entities can safely be disabled if you are not using them.
 
 </details>
 
-### :twisted_rightwards_arrows: Sensor: Spill Percentage (`sensor.<name>_spill_percentage`)
-A [**sensor**][hass-sensor] is created for the each air-conditioner to represent the current spill percentage.
+### :twisted_rightwards_arrows: Sensor: Spill/Bypass Percentage (`sensor.<name>_spill/bypass_percentage`)
+A [**sensor**][hass-sensor] is created for the each air-conditioner to represent the current spill/bypass percentage.
 
-This entity will only be created if one or more spill zones were selected during the integration configuration.
+For an AirTouch 4 system fractional bypass is not supported and this entity will only be created if one or more spill zones were selected during the integration setup.
 For a system with one spill zone, the actual opening percentage of the zone will be the sum of the spill percentage and the current open percentage.
 
 <details>
@@ -226,7 +226,7 @@ For a system with one spill zone, the actual opening percentage of the zone will
 #### States
  State     | Description
 -----------|-------------
- `<value>` | The current spill percentage. The spill percentage may be >100% if there are multiple spill zones.
+ `<value>` | The current spill/bypass percentage. The spill percentage may be >100% if there are multiple spill zones.
 
 </details>
 
