@@ -306,9 +306,18 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         power_control = _CLIMATE_PRESET_TO_AC_POWER_CONTROL.get(preset_mode)
+
+        if preset_mode == climate.PRESET_NONE:
+            # Clear an active preset mode by setting the AirTouch into the
+            # plain off/on mode according to the current state.
+            if self.hvac_action == climate.HVACAction.OFF:
+                power_control = pyairtouch.AcPowerControl.TURN_OFF
+            else:
+                power_control = pyairtouch.AcPowerControl.TURN_ON
+
         if power_control:
             await self._airtouch_ac.set_power(power_control)
-        elif preset_mode != climate.PRESET_NONE:
+        else:
             _LOGGER.warning("Unsupported preset mode: %s", preset_mode)
 
     async def async_set_temperature(self, **kwargs: Any) -> None:  # noqa: ANN401
