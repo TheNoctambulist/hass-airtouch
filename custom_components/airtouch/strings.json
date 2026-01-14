@@ -1,6 +1,27 @@
 {
   "config": {
     "step": {
+      "user": {
+        "title": "Connection Method",
+        "description": "Choose how to connect to your AirTouch system.",
+        "data": {
+          "connection_method": "Connection Method"
+        }
+      },
+      "manual_config": {
+        "title": "Manual Configuration",
+        "description": "Enter the connection details for your AirTouch system. Use this if auto-discovery is not working (e.g., Docker bridge network).",
+        "data": {
+          "model": "AirTouch Model",
+          "host": "[%key:common::config_flow::data::host%]",
+          "port": "[%key:common::config_flow::data::port%]"
+        },
+        "data_description": {
+          "model": "Select your AirTouch model.",
+          "host": "IP address or hostname of your AirTouch console.",
+          "port": "Port number (default: 9004 for AirTouch 4, 9005 for AirTouch 5)."
+        }
+      },
       "user_host": {
         "title": "Set up the AirTouch connection details",
         "description": "Enter the host name or IP Address of the AirTouch wall panel.",
@@ -34,7 +55,8 @@
     },
     "error": {
       "already_configured": "Already configured. Enter a new host name or IP address.",
-      "no_devices_found": "Couldn't connect to AirTouch console. Check the address and try again."
+      "no_devices_found": "Couldn't connect to AirTouch console. Check the address and try again.",
+      "cannot_connect": "Failed to connect to AirTouch. Please check the model, host, and port."
     }
   },
   "options": {
@@ -48,6 +70,18 @@
     }
   },
   "selector": {
+    "connection_method": {
+      "options": {
+        "discover": "Auto-discover",
+        "manual": "Manual configuration"
+      }
+    },
+    "model": {
+      "options": {
+        "airtouch_4": "AirTouch 4",
+        "airtouch_5": "AirTouch 5"
+      }
+    },
     "hvac_mode": {
       "options": {
         "cool": "Cool",

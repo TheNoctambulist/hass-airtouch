@@ -8,11 +8,13 @@ import logging
 from typing import TYPE_CHECKING
 
 import pyairtouch
-from homeassistant.const import CONF_HOST, Platform
+from homeassistant.const import CONF_HOST, CONF_PORT, Platform
 from homeassistant.exceptions import ConfigEntryNotReady
 
 from .const import (
+    CONF_MANUAL_CONNECTION,
     CONF_MINOR_VERSION,
+    CONF_MODEL,
     CONF_VERSION,
     DOMAIN,
 )
@@ -37,7 +39,7 @@ PLATFORMS: list[Platform] = [
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up the Polyaire AirTouch connection after discovery."""
+    """Set up the Polyaire AirTouch connection."""
     _LOGGER.debug(
         "ConfigEntry (v%d.%d): %s",
         entry.version,
@@ -49,18 +51,34 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # A lock is included to support mutual exclusion between config entries.
     hass.data.setdefault(DOMAIN, {_LOCK_KEY: asyncio.Lock()})
 
-    # Ensure discovery is mutually exlusive across config entries since it needs
-    # to bind to an explicit local port.
-    async with hass.data[DOMAIN][_LOCK_KEY]:
-        discovery_results = await pyairtouch.discover(
-            remote_host=entry.data.get(CONF_HOST)
+    airtouch: pyairtouch.AirTouch | None = None
+
+    if entry.data.get(CONF_MANUAL_CONNECTION):
+        # Manual connection mode - use pyairtouch.connect() directly
+        model = getattr(pyairtouch.AirTouchModel, entry.data[CONF_MODEL])
+        host = entry.data[CONF_HOST]
+        port = entry.data[CONF_PORT]
+
+        airtouch = pyairtouch.connect(
+            model=model,
+            host=host,
+            port=port,
+        )
+    else:
+        # Discovery mode - use pyairtouch.discover()
+        # Ensure discovery is mutually exclusive across config entries since it needs
+        # to bind to an explicit local port.
+        async with hass.data[DOMAIN][_LOCK_KEY]:
+            discovery_results = await pyairtouch.discover(
+                remote_host=entry.data.get(CONF_HOST)
+            )
+
+        # Filter the API instances to the AirTouch controller that matches this
+        # config entry.
+        airtouch = next(
+            (at for at in discovery_results if entry.unique_id == at.airtouch_id), None
         )
 
-    # Filter the API instances to the AirTouch controller that matches this
-    # config entry.
-    airtouch = next(
-        (at for at in discovery_results if entry.unique_id == at.airtouch_id), None
-    )
     if not airtouch:
         # Couldn't find the AirTouch device.
         # As a general rule this shouldn't happen because we are using discovery.

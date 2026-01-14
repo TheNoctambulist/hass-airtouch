@@ -7,6 +7,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import (
     CONF_HOST,
+    CONF_PORT,
     PRECISION_HALVES,
     PRECISION_TENTHS,
     PRECISION_WHOLE,
@@ -15,7 +16,11 @@ from homeassistant.core import callback
 from homeassistant.helpers import selector
 
 from .const import (
+    AT4_DEFAULT_PORT,
+    AT5_DEFAULT_PORT,
+    CONF_MANUAL_CONNECTION,
     CONF_MINOR_VERSION,
+    CONF_MODEL,
     CONF_SPILL_BYPASS,
     CONF_SPILL_ZONES,
     CONF_VERSION,
@@ -49,10 +54,116 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     # Compatibility: Before 2024.4:
     # Return type is quoted for type checking only since it is new in 2024.4.
     async def async_step_user(
-        self, _: dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> "config_entries.ConfigFlowResult":
-        """Handle a flow initialised by the user."""
-        return await self.async_step_discover_airtouch()
+        """Handle a flow initialised by the user.
+
+        Presents a choice between auto-discovery and manual configuration.
+        """
+        if user_input is not None:
+            if user_input.get("connection_method") == "manual":
+                return await self.async_step_manual_config()
+            return await self.async_step_discover_airtouch()
+
+        return self.async_show_form(
+            step_id="user",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        "connection_method", default="discover"
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=[
+                                selector.SelectOptionDict(
+                                    value="discover", label="Auto-discover"
+                                ),
+                                selector.SelectOptionDict(
+                                    value="manual", label="Manual configuration"
+                                ),
+                            ],
+                            mode=selector.SelectSelectorMode.LIST,
+                            translation_key="connection_method",
+                        )
+                    ),
+                }
+            ),
+        )
+
+    async def async_step_manual_config(
+        self,
+        user_input: dict[str, Any] | None = None,
+    ) -> "config_entries.ConfigFlowResult":
+        """Handle manual configuration of AirTouch connection details."""
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            model_name = user_input[CONF_MODEL]
+            host = user_input[CONF_HOST]
+            port = user_input[CONF_PORT]
+
+            # Convert model name to enum (using getattr since we store enum member names)
+            model = getattr(pyairtouch.AirTouchModel, model_name)
+
+            # Try to connect to validate the configuration
+            try:
+                airtouch = pyairtouch.connect(
+                    model=model,
+                    host=host,
+                    port=port,
+                )
+                # Initialize to validate connection and get device info
+                if await airtouch.init():
+                    # Store connection details in context
+                    self.context[CONF_HOST] = host  # type: ignore[literal-required]
+                    self.context[CONF_PORT] = port  # type: ignore[literal-required]
+                    self.context[CONF_MODEL] = model_name  # type: ignore[literal-required]
+                    self.context[CONF_MANUAL_CONNECTION] = True  # type: ignore[literal-required]
+                    self.context[_CONTEXT_TITLE] = airtouch.name  # type: ignore[literal-required]
+                    self.context[_CONTEXT_AIRTOUCH_API] = airtouch  # type: ignore[literal-required]
+                    self.context[_CONTEXT_REMAINING_AIRTOUCHES] = []  # type: ignore[literal-required]
+
+                    # Set unique ID based on host and port for manual connections
+                    await self.async_set_unique_id(f"{host}:{port}")
+                    self._abort_if_unique_id_configured()
+
+                    return await self.async_step_settings()
+                else:
+                    await airtouch.shutdown()
+                    errors["base"] = "cannot_connect"
+            except Exception:  # noqa: BLE001
+                errors["base"] = "cannot_connect"
+
+        # Determine default port based on model selection
+        default_port = AT4_DEFAULT_PORT
+
+        return self.async_show_form(
+            step_id="manual_config",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_MODEL, default="AIRTOUCH_4"
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=[
+                                selector.SelectOptionDict(
+                                    value="AIRTOUCH_4", label="AirTouch 4"
+                                ),
+                                selector.SelectOptionDict(
+                                    value="AIRTOUCH_5", label="AirTouch 5"
+                                ),
+                            ],
+                            mode=selector.SelectSelectorMode.DROPDOWN,
+                            translation_key="model",
+                        )
+                    ),
+                    vol.Required(CONF_HOST): str,
+                    vol.Required(CONF_PORT, default=default_port): vol.All(
+                        vol.Coerce(int), vol.Range(min=1, max=65535)
+                    ),
+                }
+            ),
+            errors=errors,
+        )
 
     async def async_step_discover_airtouch(
         self,
@@ -215,13 +326,22 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 step_id="finalise",
             )
 
+        # Build the data dictionary
+        entry_data: dict[str, Any] = {
+            CONF_HOST: self.context[CONF_HOST],  # type: ignore[literal-required]
+            CONF_SPILL_BYPASS: self.context[CONF_SPILL_BYPASS],  # type: ignore[literal-required]
+            CONF_SPILL_ZONES: self.context[CONF_SPILL_ZONES],  # type: ignore[literal-required]
+        }
+
+        # Add manual connection data if applicable
+        if self.context.get(CONF_MANUAL_CONNECTION):  # type: ignore[literal-required]
+            entry_data[CONF_MANUAL_CONNECTION] = True
+            entry_data[CONF_MODEL] = self.context[CONF_MODEL]  # type: ignore[literal-required]
+            entry_data[CONF_PORT] = self.context[CONF_PORT]  # type: ignore[literal-required]
+
         return self.async_create_entry(
             title=self.context[_CONTEXT_TITLE],  # type: ignore[literal-required]
-            data={
-                CONF_HOST: self.context[CONF_HOST],  # type: ignore[literal-required]
-                CONF_SPILL_BYPASS: self.context[CONF_SPILL_BYPASS],  # type: ignore[literal-required]
-                CONF_SPILL_ZONES: self.context[CONF_SPILL_ZONES],  # type: ignore[literal-required]
-            },
+            data=entry_data,
             options={
                 OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES: self.context[
                     OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES  # type: ignore[literal-required]

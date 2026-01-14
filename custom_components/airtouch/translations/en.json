@@ -2,9 +2,31 @@
   "config": {
     "error": {
       "already_configured": "Already configured. Enter a new host name or IP address.",
-      "no_devices_found": "Failed to connect to AirTouch console. Check the address and try again."
+      "no_devices_found": "Failed to connect to AirTouch console. Check the address and try again.",
+      "cannot_connect": "Failed to connect to AirTouch. Please check the model, host, and port."
     },
     "step": {
+      "user": {
+        "title": "Connection Method",
+        "description": "Choose how to connect to your AirTouch system.",
+        "data": {
+          "connection_method": "Connection Method"
+        }
+      },
+      "manual_config": {
+        "title": "Manual Configuration",
+        "description": "Enter the connection details for your AirTouch system. Use this if auto-discovery is not working (e.g., Docker bridge network).",
+        "data": {
+          "model": "AirTouch Model",
+          "host": "Host",
+          "port": "Port"
+        },
+        "data_description": {
+          "model": "Select your AirTouch model.",
+          "host": "IP address or hostname of your AirTouch console.",
+          "port": "Port number (default: 9004 for AirTouch 4, 9005 for AirTouch 5)."
+        }
+      },
       "finalise": {
         "description": "Run the \"Add Hub\" action from the integration settings page to register the others with Home Assistant.",
         "title": "More than one AirTouch systems were discovered"
@@ -48,6 +70,18 @@
     }
   },
   "selector": {
+    "connection_method": {
+      "options": {
+        "discover": "Auto-discover",
+        "manual": "Manual configuration"
+      }
+    },
+    "model": {
+      "options": {
+        "airtouch_4": "AirTouch 4",
+        "airtouch_5": "AirTouch 5"
+      }
+    },
     "hvac_mode": {
       "options": {
         "cool": "Cool",

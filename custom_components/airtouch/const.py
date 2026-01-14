@@ -9,7 +9,16 @@ DOMAIN = "airtouch"
 MANUFACTURER = "Polyaire"
 
 CONF_VERSION = 2
-CONF_MINOR_VERSION = 1
+CONF_MINOR_VERSION = 2
+
+# Manual connection configuration
+CONF_MODEL = "model"
+CONF_PORT = "port"
+CONF_MANUAL_CONNECTION = "manual_connection"
+
+# Default ports for AirTouch models
+AT4_DEFAULT_PORT = 9004
+AT5_DEFAULT_PORT = 9005
 
 # Indicates whether the AirTouch is set up with a spill zone or with a bypass duct.
 CONF_SPILL_BYPASS = "spill_bypass"
