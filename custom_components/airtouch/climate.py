@@ -415,9 +415,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
             return self._attr_hvac_modes
         # otherwises the Zone can either be off, or on in the current mode of the AC
         if self._airtouch_ac.selected_mode is None:
-            return [
-                climate.HVACMode.OFF,
-            ]
+            return self._attr_hvac_modes
         return [
             climate.HVACMode.OFF,
             _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode],
@@ -534,7 +532,8 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         # AirTouch AC. This will always be an "on" mode even if the AC is turned
         # off.
         if self._airtouch_ac.selected_mode is None:
-            raise RuntimeError("AC Mode is unknown")
+            await self._airtouch_zone.set_power(pyairtouch.ZonePowerState.ON)
+            return
         await self.async_set_hvac_mode(
             _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode]
         )
