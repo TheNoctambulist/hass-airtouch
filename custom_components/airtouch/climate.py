@@ -413,7 +413,9 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
     def hvac_modes(self) -> list[climate.HVACMode]:
         if self._allow_zone_hvac_mode_changes:
             return self._attr_hvac_modes
-        # otherwises the Zone can either be off, or on in the current mode of the AC
+        # Fix: when AC mode is unknown (e.g. unit just powered off), fall back to
+        # the full supported-modes list so the zone always has a non-OFF mode
+        # available and can be toggled on independently of the main unit state.
         if self._airtouch_ac.selected_mode is None:
             return self._attr_hvac_modes
         return [
@@ -448,13 +450,17 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             return climate.HVACMode.OFF
 
-        # If the Zone is on then the mode is as per the parent AC mode
-        match self._airtouch_ac.power_state:
-            case pyairtouch.AcPowerState.OFF | pyairtouch.AcPowerState.OFF_AWAY:
-                return climate.HVACMode.OFF
-            case _:
-                if self._airtouch_ac.selected_mode:
-                    return _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode]
+        # Zone is powered on -- report the AC mode regardless of whether the AC
+        # itself is currently running. This matches the native AirTouch app
+        # behaviour where a zone can be armed on while the AC unit is off.
+        if self._airtouch_ac.selected_mode is not None:
+            return _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode]
+
+        # AC mode unknown but zone is on -- fall back to first non-OFF supported mode
+        non_off_modes = [m for m in self._attr_hvac_modes if m != climate.HVACMode.OFF]
+        if non_off_modes:
+            return non_off_modes[0]
+
         return None
 
     @property
@@ -462,10 +468,11 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             return climate.HVACAction.OFF
 
-        # If the zone is on the zone hvac action follows the AC mode.
+        # Zone is on -- follow the AC action, but treat AC-off as IDLE rather than
+        # OFF so that the zone correctly reflects its armed-on state.
         match self._airtouch_ac.power_state:
             case pyairtouch.AcPowerState.OFF | pyairtouch.AcPowerState.OFF_AWAY:
-                return climate.HVACAction.OFF
+                return climate.HVACAction.IDLE
             case pyairtouch.AcPowerState.OFF_FORCED:
                 return climate.HVACAction.IDLE
             case _:
@@ -476,7 +483,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
     @property
     def extra_state_attributes(self) -> Optional[Mapping[str, Any]]:
         # Add the control method as an attribute so that this can be seen in
-        # Home Assistant. It's unlikely to change often but potentially useful
+        # Home Assistant. It is unlikely to change often but potentially useful
         # for automations.
         return {"control_method": self._airtouch_zone.control_method.name.lower()}
 
@@ -531,6 +538,10 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         # Turn the zone on by activating it according to the current mode of the
         # AirTouch AC. This will always be an "on" mode even if the AC is turned
         # off.
+        # Fix: if AC mode is unknown (unit is off and has not reported a mode yet),
+        # turn the zone on directly rather than raising RuntimeError. The zone
+        # power state is independent of the AC mode, matching the behaviour of
+        # the official AirTouch app.
         if self._airtouch_ac.selected_mode is None:
             await self._airtouch_zone.set_power(pyairtouch.ZonePowerState.ON)
             return
@@ -543,6 +554,6 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
 
     async def _async_on_ac_update(self, _: int) -> None:
         # We only really need to trigger an update if the AC Mode or Power State
-        # have been updated. However this update isn't triggered that often and
+        # have been updated. However this update is not triggered that often and
         # Home Assistant filters no-change updates internally.
         self.async_schedule_update_ha_state()
