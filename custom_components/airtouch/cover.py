@@ -5,6 +5,7 @@ system.
 """
 
 import logging
+from functools import cached_property
 from typing import Any, Optional
 
 import pyairtouch
@@ -73,13 +74,13 @@ class ZoneDamperEntity(entities.AirTouchZoneEntity, cover.CoverEntity):
             id_suffix="_damper",
         )
 
-    @property
+    @cached_property
     def current_cover_position(self) -> int | None:
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             return 0
         return self._airtouch_zone.current_damper_percentage
 
-    @property
+    @cached_property
     def is_closed(self) -> Optional[bool]:
         return self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF
 

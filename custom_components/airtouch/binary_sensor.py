@@ -7,6 +7,7 @@ Binary sensors are used to represent:
 """
 
 import logging
+from functools import cached_property
 
 import pyairtouch
 from homeassistant.components import binary_sensor
@@ -98,7 +99,7 @@ class AcSpillBypassEntity(entities.AirTouchAcEntity, binary_sensor.BinarySensorE
         )
         self._attr_name = "Bypass" if spill_bypass == SpillBypass.BYPASS else "Spill"
 
-    @property
+    @cached_property
     def is_on(self) -> bool | None:
         return self._airtouch_ac.spill_state != pyairtouch.AcSpillState.NONE
 
@@ -118,7 +119,7 @@ class ZoneSpillEntity(entities.AirTouchZoneEntity, binary_sensor.BinarySensorEnt
             id_suffix="_spill",
         )
 
-    @property
+    @cached_property
     def is_on(self) -> bool | None:
         return self._airtouch_zone.spill_active
 
@@ -138,7 +139,7 @@ class ZoneBatteryEntity(entities.AirTouchZoneEntity, binary_sensor.BinarySensorE
             id_suffix="_battery",
         )
 
-    @property
+    @cached_property
     def is_on(self) -> bool | None:
         return (
             self._airtouch_zone.sensor_battery_status

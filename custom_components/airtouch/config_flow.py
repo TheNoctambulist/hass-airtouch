@@ -1,6 +1,6 @@
 """Config flow for Polyaire AirTouch."""
 
-from typing import Any
+from typing import Any, override
 
 import pyairtouch
 import voluptuous as vol
@@ -48,8 +48,9 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     # Compatibility: Before 2024.4:
     # Return type is quoted for type checking only since it is new in 2024.4.
+    @override
     async def async_step_user(
-        self, _: dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> "config_entries.ConfigFlowResult":
         """Handle a flow initialised by the user."""
         return await self.async_step_discover_airtouch()

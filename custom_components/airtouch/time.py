@@ -6,6 +6,7 @@ Time entities are used to represent:
 
 import datetime
 import logging
+from functools import cached_property
 
 import pyairtouch
 import voluptuous
@@ -84,7 +85,7 @@ class AcQuickTimerEntity(entities.AirTouchAcEntity, time.TimeEntity):
         self._timer_type = timer_type
         self._attr_name = _TIMER_TYPE_NAME_MAPPING[timer_type]
 
-    @property
+    @cached_property
     def native_value(self) -> datetime.time | None:
         return self._airtouch_ac.next_quick_timer(self._timer_type)
 

@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import Mapping
+from functools import cached_property
 from typing import Any, Optional
 
 import pyairtouch
@@ -218,29 +219,29 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
             if ac_power in airtouch_ac.supported_power_controls
         ]
 
-    @property
+    @cached_property
     def current_temperature(self) -> Optional[float]:
         return self._airtouch_ac.current_temperature
 
-    @property
+    @cached_property
     def target_temperature(self) -> Optional[float]:
         return self._airtouch_ac.target_temperature
 
-    @property
+    @cached_property
     def max_temp(self) -> float:
         return self._airtouch_ac.max_target_temperature
 
-    @property
+    @cached_property
     def min_temp(self) -> float:
         return self._airtouch_ac.min_target_temperature
 
-    @property
+    @cached_property
     def fan_mode(self) -> str | None:
         if self._airtouch_ac.selected_fan_speed:
             return AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.selected_fan_speed]
         return None
 
-    @property
+    @cached_property
     def hvac_mode(self) -> climate.HVACMode | None:
         match self._airtouch_ac.power_state:
             case pyairtouch.AcPowerState.OFF | pyairtouch.AcPowerState.OFF_AWAY:
@@ -250,7 +251,7 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
                     return _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode]
         return None
 
-    @property
+    @cached_property
     def hvac_action(self) -> climate.HVACAction | None:
         match self._airtouch_ac.power_state:
             case pyairtouch.AcPowerState.OFF | pyairtouch.AcPowerState.OFF_AWAY:
@@ -262,13 +263,13 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
                     return _AC_TO_CLIMATE_HVAC_ACTION[self._airtouch_ac.active_mode]
         return None
 
-    @property
+    @cached_property
     def preset_mode(self) -> str:
         if self._airtouch_ac.power_state:
             return _AC_POWER_STATE_TO_PRESET[self._airtouch_ac.power_state]
         return climate.PRESET_NONE
 
-    @property
+    @cached_property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return AC specific state attributes."""
         last_active_hvac_mode: climate.HVACMode | None = None
@@ -409,7 +410,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         await super().async_will_remove_from_hass()
         self._airtouch_ac.unsubscribe_ac_state(self._async_on_ac_update)
 
-    @property
+    @cached_property
     def hvac_modes(self) -> list[climate.HVACMode]:
         if self._allow_zone_hvac_mode_changes:
             return self._attr_hvac_modes
@@ -423,29 +424,29 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
             _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode],
         ]
 
-    @property
+    @cached_property
     def current_temperature(self) -> Optional[float]:
         return self._airtouch_zone.current_temperature
 
-    @property
+    @cached_property
     def target_temperature(self) -> Optional[float]:
         return self._airtouch_zone.target_temperature
 
-    @property
+    @cached_property
     def max_temp(self) -> float:
         return self._airtouch_ac.max_target_temperature
 
-    @property
+    @cached_property
     def min_temp(self) -> float:
         return self._airtouch_ac.min_target_temperature
 
-    @property
+    @cached_property
     def fan_mode(self) -> str | None:
         if self._airtouch_zone.power_state:
             return _ZONE_TO_CLIMATE_FAN_MODE[self._airtouch_zone.power_state]
         return None
 
-    @property
+    @cached_property
     def hvac_mode(self) -> climate.HVACMode | None:
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             return climate.HVACMode.OFF
@@ -459,7 +460,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
                     return _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode]
         return None
 
-    @property
+    @cached_property
     def hvac_action(self) -> climate.HVACAction | None:
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             return climate.HVACAction.OFF
@@ -475,7 +476,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
                     return _AC_TO_CLIMATE_HVAC_ACTION[self._airtouch_ac.active_mode]
         return None
 
-    @property
+    @cached_property
     def extra_state_attributes(self) -> Optional[Mapping[str, Any]]:
         # Add the control method as an attribute so that this can be seen in
         # Home Assistant. It's unlikely to change often but potentially useful

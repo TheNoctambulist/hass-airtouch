@@ -40,7 +40,8 @@ class BaseDevice:
         self._unique_id = unique_id
 
         self._device_info = device_registry.DeviceInfo(
-            identifiers={(DOMAIN, unique_id)}, **kwargs
+            identifiers={(DOMAIN, unique_id)},
+            **kwargs,  # pyright: ignore[reportCallIssue]
         )
 
         # Always explicitly register the device in case there are no associated
@@ -63,7 +64,7 @@ class BaseDevice:
 
     def _register_device(self) -> None:
         registry = device_registry.async_get(self._hass)
-        if not registry.async_get_device(identifiers=self._device_info["identifiers"]):
+        if not registry.async_get_device(identifiers=self._device_info["identifiers"]):  # pyright: ignore[reportTypedDictNotRequiredAccess]
             # We only want to suggest an area that already exists in the Area Registry
             suggested_area = self._device_info.get("suggested_area")
             if suggested_area:
@@ -113,7 +114,7 @@ class BaseDevice:
     def _normalize_name(self, name: str) -> str:
         # Compatibility: Before 2024.4
         if hasattr(area_registry, "normalize_area_name"):
-            return cast("str", area_registry.normalize_area_name(name))
+            return cast("str", area_registry.normalize_area_name(name))  # pyright: ignore[reportAttributeAccessIssue]
 
         from homeassistant.helpers.normalized_name_base_registry import (
             normalize_name,

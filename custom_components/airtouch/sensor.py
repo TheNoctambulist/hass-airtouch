@@ -6,6 +6,7 @@ Sensors are used to represent:
 """
 
 import logging
+from functools import cached_property
 from typing import Any
 
 import pyairtouch
@@ -121,7 +122,7 @@ class AcTemperatureEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
             id_suffix="_temperature",
         )
 
-    @property
+    @cached_property
     def native_value(self) -> float:
         return self._airtouch_ac.current_temperature
 
@@ -143,7 +144,7 @@ class AcActiveFanSpeedEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
         )
         self._attr_options = list(climate.AC_TO_CLIMATE_FAN_MODE.values())
 
-    @property
+    @cached_property
     def native_value(self) -> str | None:
         if self._airtouch_ac.active_fan_speed:
             return climate.AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.active_fan_speed]
@@ -167,14 +168,14 @@ class AcErrorEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
             ac_device=ac_device, airtouch_ac=airtouch_ac, id_suffix="_error"
         )
 
-    @property
+    @cached_property
     def native_value(self) -> int | str:
         error_info = self._airtouch_ac.error_info
         if error_info:
             return error_info.code
         return _NO_ERROR
 
-    @property
+    @cached_property
     def extra_state_attributes(self) -> dict[str, Any]:
         error_description: str | None = _NO_ERROR
         error_info = self._airtouch_ac.error_info
@@ -201,7 +202,7 @@ class ZoneTemperatureEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
             id_suffix="_temperature",
         )
 
-    @property
+    @cached_property
     def native_value(self) -> float | None:
         return self._airtouch_zone.current_temperature
 
@@ -223,7 +224,7 @@ class ZonePercentageEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
             id_suffix="_open_percentage",
         )
 
-    @property
+    @cached_property
     def native_value(self) -> int:
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             # Force the value to zero when the zone is turned off to have a more
@@ -271,7 +272,7 @@ class SpillBypassPercentageEntity(entities.AirTouchAcEntity, sensor.SensorEntity
         #    spill_zone_count * 100
         self._spill_percentage_limit = spill_zone_count * 100
 
-    @property
+    @cached_property
     def native_value(self) -> int:
         if self._airtouch_ac.power_state in [
             pyairtouch.AcPowerState.OFF,
