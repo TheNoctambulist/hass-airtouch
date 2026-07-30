@@ -6,7 +6,7 @@ system.
 
 import logging
 from functools import cached_property
-from typing import Any, Optional
+from typing import Any
 
 import pyairtouch
 from homeassistant.components import cover
@@ -81,7 +81,7 @@ class ZoneDamperEntity(entities.AirTouchZoneEntity, cover.CoverEntity):
         return self._airtouch_zone.current_damper_percentage
 
     @cached_property
-    def is_closed(self) -> Optional[bool]:
+    def is_closed(self) -> bool | None:
         return self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF
 
     async def async_open_cover(self, **_: Any) -> None:  # noqa: ANN401

@@ -4,7 +4,7 @@ This module is used to ensure consistent device information and IDs are used
 throughout all platforms.
 """
 
-from typing import Optional, cast
+from typing import cast
 
 import pyairtouch
 from homeassistant.core import HomeAssistant
@@ -74,7 +74,7 @@ class BaseDevice:
                 config_entry_id=self._config_entry_id, **self._device_info
             )
 
-    def _find_area(self, name: str) -> Optional[str]:
+    def _find_area(self, name: str) -> str | None:
         """Find an area in the area registry using a fuzzy search on a name.
 
         Returns:
@@ -87,7 +87,7 @@ class BaseDevice:
 
         # Find the closest area match using a basic fuzzy search
         best_distance: int = _MAX_LEVENSTHEIN_DISTANCE
-        best_area: Optional[area_registry.AreaEntry] = None
+        best_area: area_registry.AreaEntry | None = None
         for area in areas:
             name_distance = _levenshtein_distance(normalized_name, area.normalized_name)
             if name_distance < best_distance:
@@ -116,7 +116,7 @@ class BaseDevice:
         if hasattr(area_registry, "normalize_area_name"):
             return cast("str", area_registry.normalize_area_name(name))  # pyright: ignore[reportAttributeAccessIssue]
 
-        from homeassistant.helpers.normalized_name_base_registry import (
+        from homeassistant.helpers.normalized_name_base_registry import (  # noqa: PLC0415
             normalize_name,
         )
 
@@ -202,7 +202,9 @@ class AirTouchDevice(BaseDevice):
             # For AirTouch 4 systems the serial number doesn't appear to be
             # unique (some logs have shown an all zeroes MAC address). The
             # AirTouch ID is always unique, so we use that here.
-            unique_id=airtouch.airtouch_id,
+            # The airtouch_id will never be None at this stage since the AirTouch object
+            # has been initialised.
+            unique_id=cast("str", airtouch.airtouch_id),
             name=airtouch.name,
             manufacturer=MANUFACTURER,
             model=airtouch.model.value,

@@ -30,7 +30,8 @@
       },
       "user_host": {
         "data": {
-          "host": "Host"
+          "host": "Host",
+          "airtouch_model": "Model"
         },
         "description": "Enter the host name or IP Address of the AirTouch wall panel.",
         "title": "Set up the AirTouch connection details"
@@ -48,6 +49,13 @@
     }
   },
   "selector": {
+    "airtouch_model": {
+      "options": {
+        "auto_discover": "Auto",
+        "airtouch_4": "AirTouch 4",
+        "airtouch_5": "AirTouch 5"
+      }
+    },
     "hvac_mode": {
       "options": {
         "cool": "Cool",

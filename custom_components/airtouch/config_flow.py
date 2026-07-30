@@ -15,6 +15,8 @@ from homeassistant.core import callback
 from homeassistant.helpers import selector
 
 from .const import (
+    AIRTOUCH_MODEL_TO_API,
+    CONF_AIRTOUCH_MODEL,
     CONF_MINOR_VERSION,
     CONF_SPILL_BYPASS,
     CONF_SPILL_ZONES,
@@ -24,6 +26,7 @@ from .const import (
     OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES_DEFAULT,
     OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
     OPTIONS_MIN_TARGET_TEMPERATURE_STEP_DEFAULT,
+    AirTouchModel,
     SpillBypass,
 )
 
@@ -58,6 +61,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_discover_airtouch(
         self,
         remote_host: str | None = None,
+        airtouch_model: AirTouchModel = AirTouchModel.AUTO_DISCOVER,
     ) -> "config_entries.ConfigFlowResult":
         """Attempt to discover AirTouch devices on the network.
 
@@ -69,14 +73,32 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         broadcast such as when Home Assistant is running on the Docker bridge
         network.
 
+        If both a remote host and AirTouch model are defined then discovery will be
+        skipped and a direct connection to the AirTouch will be initiated.
+
         Args:
             info: accumulated info from any previous steps.
             remote_host: optional remote host to target for discovery.
+            airtouch_model: optional model of the AirTouch to skip the discovery step.
         """
         # Save the current remote host as context for other steps
         self.context[CONF_HOST] = remote_host  # type: ignore[literal-required]
+        self.context[CONF_AIRTOUCH_MODEL] = airtouch_model  # type: ignore[literal-required]
 
-        discovered_airtouches = await pyairtouch.discover(remote_host)
+        discovered_airtouches: list[pyairtouch.AirTouch] = []
+        if remote_host and airtouch_model != AirTouchModel.AUTO_DISCOVER:
+            airtouch = pyairtouch.connect(
+                model=AIRTOUCH_MODEL_TO_API[airtouch_model],
+                host=remote_host,
+            )
+            await airtouch.init()
+            if airtouch.initialised:
+                discovered_airtouches.append(airtouch)
+            await airtouch.shutdown()
+
+        else:
+            discovered_airtouches.extend(await pyairtouch.discover(remote_host))
+
         airtouches = self._filter_unconfigured(discovered_airtouches)
 
         if airtouches:
@@ -120,12 +142,27 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             CONF_HOST,
                             default=self.context.get(CONF_HOST),
                         ): str,
+                        vol.Required(
+                            CONF_AIRTOUCH_MODEL,
+                            default=self.context.get(
+                                CONF_AIRTOUCH_MODEL, AirTouchModel.AUTO_DISCOVER.value
+                            ),
+                        ): selector.SelectSelector(
+                            selector.SelectSelectorConfig(
+                                options=[x.value for x in AirTouchModel],
+                                mode=selector.SelectSelectorMode.DROPDOWN,
+                                translation_key=CONF_AIRTOUCH_MODEL,
+                            )
+                        ),
                     }
                 ),
                 errors=errors,
             )
 
-        return await self.async_step_discover_airtouch(info[CONF_HOST])
+        return await self.async_step_discover_airtouch(
+            remote_host=info[CONF_HOST],
+            airtouch_model=AirTouchModel(info[CONF_AIRTOUCH_MODEL]),
+        )
 
     async def async_step_settings(
         self,
@@ -220,6 +257,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             title=self.context[_CONTEXT_TITLE],  # type: ignore[literal-required]
             data={
                 CONF_HOST: self.context[CONF_HOST],  # type: ignore[literal-required]
+                CONF_AIRTOUCH_MODEL: self.context[CONF_AIRTOUCH_MODEL],  # type: ignore[literal-required]
                 CONF_SPILL_BYPASS: self.context[CONF_SPILL_BYPASS],  # type: ignore[literal-required]
                 CONF_SPILL_ZONES: self.context[CONF_SPILL_ZONES],  # type: ignore[literal-required]
             },

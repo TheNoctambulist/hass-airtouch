@@ -6,7 +6,6 @@ console.
 
 import logging
 from functools import cached_property
-from typing import Optional
 
 import pyairtouch
 from homeassistant.components import update
@@ -54,14 +53,14 @@ class AirtouchUpdateEntity(entities.AirTouchConsoleEntity, update.UpdateEntity):
         super().__init__(airtouch_device=airtouch_device, airtouch=airtouch)
 
     @cached_property
-    def installed_version(self) -> Optional[str]:
+    def installed_version(self) -> str | None:
         if self._airtouch.console_versions:
             # The first entry is the master-console version
             return self._airtouch.console_versions[0]
         return None
 
     @cached_property
-    def latest_version(self) -> Optional[str]:
+    def latest_version(self) -> str | None:
         if self._airtouch.update_available:
             # The latest version number is not available, returning any string
             # here is sufficient for Home Assistant to mark the entity as "On"

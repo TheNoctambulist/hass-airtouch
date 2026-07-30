@@ -5,7 +5,8 @@
         "title": "Set up the AirTouch connection details",
         "description": "Enter the host name or IP Address of the AirTouch wall panel.",
         "data": {
-          "host": "[%key:common::config_flow::data::host%]"
+          "host": "[%key:common::config_flow::data::host%]",
+          "airtouch_model": "Model"
         }
       },
       "settings": {
@@ -48,6 +49,13 @@
     }
   },
   "selector": {
+    "airtouch_model": {
+      "options": {
+        "auto_discover": "Auto",
+        "airtouch_4": "AirTouch 4",
+        "airtouch_5": "AirTouch 5"
+      }
+    },
     "hvac_mode": {
       "options": {
         "cool": "Cool",

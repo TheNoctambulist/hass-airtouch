@@ -3,7 +3,7 @@
 import logging
 from collections.abc import Mapping
 from functools import cached_property
-from typing import Any, Optional
+from typing import Any
 
 import pyairtouch
 import voluptuous
@@ -220,11 +220,11 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
         ]
 
     @cached_property
-    def current_temperature(self) -> Optional[float]:
+    def current_temperature(self) -> float | None:
         return self._airtouch_ac.current_temperature
 
     @cached_property
-    def target_temperature(self) -> Optional[float]:
+    def target_temperature(self) -> float | None:
         return self._airtouch_ac.target_temperature
 
     @cached_property
@@ -425,11 +425,11 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         ]
 
     @cached_property
-    def current_temperature(self) -> Optional[float]:
+    def current_temperature(self) -> float | None:
         return self._airtouch_zone.current_temperature
 
     @cached_property
-    def target_temperature(self) -> Optional[float]:
+    def target_temperature(self) -> float | None:
         return self._airtouch_zone.target_temperature
 
     @cached_property
@@ -477,7 +477,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         return None
 
     @cached_property
-    def extra_state_attributes(self) -> Optional[Mapping[str, Any]]:
+    def extra_state_attributes(self) -> Mapping[str, Any] | None:
         # Add the control method as an attribute so that this can be seen in
         # Home Assistant. It's unlikely to change often but potentially useful
         # for automations.
