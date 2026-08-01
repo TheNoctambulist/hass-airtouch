@@ -5,7 +5,6 @@ system.
 """
 
 import logging
-from functools import cached_property
 from typing import Any
 
 import pyairtouch
@@ -74,14 +73,14 @@ class ZoneDamperEntity(entities.AirTouchZoneEntity, cover.CoverEntity):
             id_suffix="_damper",
         )
 
-    @cached_property
-    def current_cover_position(self) -> int | None:
+    @property
+    def current_cover_position(self) -> int | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             return 0
         return self._airtouch_zone.current_damper_percentage
 
-    @cached_property
-    def is_closed(self) -> bool | None:
+    @property
+    def is_closed(self) -> bool | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF
 
     async def async_open_cover(self, **_: Any) -> None:  # noqa: ANN401

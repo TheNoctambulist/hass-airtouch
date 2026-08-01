@@ -6,7 +6,6 @@ Sensors are used to represent:
 """
 
 import logging
-from functools import cached_property
 from typing import Any
 
 import pyairtouch
@@ -122,8 +121,8 @@ class AcTemperatureEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
             id_suffix="_temperature",
         )
 
-    @cached_property
-    def native_value(self) -> float:
+    @property
+    def native_value(self) -> float:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._airtouch_ac.current_temperature
 
 
@@ -144,8 +143,8 @@ class AcActiveFanSpeedEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
         )
         self._attr_options = list(climate.AC_TO_CLIMATE_FAN_MODE.values())
 
-    @cached_property
-    def native_value(self) -> str | None:
+    @property
+    def native_value(self) -> str | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         if self._airtouch_ac.active_fan_speed:
             return climate.AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.active_fan_speed]
         return None
@@ -168,15 +167,15 @@ class AcErrorEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
             ac_device=ac_device, airtouch_ac=airtouch_ac, id_suffix="_error"
         )
 
-    @cached_property
-    def native_value(self) -> int | str:
+    @property
+    def native_value(self) -> int | str:  # pyright: ignore[reportIncompatibleVariableOverride]
         error_info = self._airtouch_ac.error_info
         if error_info:
             return error_info.code
         return _NO_ERROR
 
-    @cached_property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:  # pyright: ignore[reportIncompatibleVariableOverride]
         error_description: str | None = _NO_ERROR
         error_info = self._airtouch_ac.error_info
         if error_info:
@@ -202,8 +201,8 @@ class ZoneTemperatureEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
             id_suffix="_temperature",
         )
 
-    @cached_property
-    def native_value(self) -> float | None:
+    @property
+    def native_value(self) -> float | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._airtouch_zone.current_temperature
 
 
@@ -224,8 +223,8 @@ class ZonePercentageEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
             id_suffix="_open_percentage",
         )
 
-    @cached_property
-    def native_value(self) -> int:
+    @property
+    def native_value(self) -> int:  # pyright: ignore[reportIncompatibleVariableOverride]
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             # Force the value to zero when the zone is turned off to have a more
             # accurate record of zone damper percentage history.
@@ -272,8 +271,8 @@ class SpillBypassPercentageEntity(entities.AirTouchAcEntity, sensor.SensorEntity
         #    spill_zone_count * 100
         self._spill_percentage_limit = spill_zone_count * 100
 
-    @cached_property
-    def native_value(self) -> int:
+    @property
+    def native_value(self) -> int:  # pyright: ignore[reportIncompatibleVariableOverride]
         if self._airtouch_ac.power_state in [
             pyairtouch.AcPowerState.OFF,
             pyairtouch.AcPowerState.OFF_AWAY,

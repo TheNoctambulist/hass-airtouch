@@ -2,7 +2,6 @@
 
 import logging
 from collections.abc import Mapping
-from functools import cached_property
 from typing import Any
 
 import pyairtouch
@@ -219,30 +218,30 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
             if ac_power in airtouch_ac.supported_power_controls
         ]
 
-    @cached_property
-    def current_temperature(self) -> float | None:
+    @property
+    def current_temperature(self) -> float | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._airtouch_ac.current_temperature
 
-    @cached_property
-    def target_temperature(self) -> float | None:
+    @property
+    def target_temperature(self) -> float | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._airtouch_ac.target_temperature
 
-    @cached_property
-    def max_temp(self) -> float:
+    @property
+    def max_temp(self) -> float:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._airtouch_ac.max_target_temperature
 
-    @cached_property
-    def min_temp(self) -> float:
+    @property
+    def min_temp(self) -> float:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._airtouch_ac.min_target_temperature
 
-    @cached_property
-    def fan_mode(self) -> str | None:
+    @property
+    def fan_mode(self) -> str | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         if self._airtouch_ac.selected_fan_speed:
             return AC_TO_CLIMATE_FAN_MODE[self._airtouch_ac.selected_fan_speed]
         return None
 
-    @cached_property
-    def hvac_mode(self) -> climate.HVACMode | None:
+    @property
+    def hvac_mode(self) -> climate.HVACMode | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         match self._airtouch_ac.power_state:
             case pyairtouch.AcPowerState.OFF | pyairtouch.AcPowerState.OFF_AWAY:
                 return climate.HVACMode.OFF
@@ -251,8 +250,8 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
                     return _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode]
         return None
 
-    @cached_property
-    def hvac_action(self) -> climate.HVACAction | None:
+    @property
+    def hvac_action(self) -> climate.HVACAction | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         match self._airtouch_ac.power_state:
             case pyairtouch.AcPowerState.OFF | pyairtouch.AcPowerState.OFF_AWAY:
                 return climate.HVACAction.OFF
@@ -263,14 +262,14 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
                     return _AC_TO_CLIMATE_HVAC_ACTION[self._airtouch_ac.active_mode]
         return None
 
-    @cached_property
-    def preset_mode(self) -> str:
+    @property
+    def preset_mode(self) -> str:  # pyright: ignore[reportIncompatibleVariableOverride]
         if self._airtouch_ac.power_state:
             return _AC_POWER_STATE_TO_PRESET[self._airtouch_ac.power_state]
         return climate.PRESET_NONE
 
-    @cached_property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:  # pyright: ignore[reportIncompatibleVariableOverride]
         """Return AC specific state attributes."""
         last_active_hvac_mode: climate.HVACMode | None = None
         if self._airtouch_ac.selected_mode:
@@ -410,8 +409,8 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
         await super().async_will_remove_from_hass()
         self._airtouch_ac.unsubscribe_ac_state(self._async_on_ac_update)
 
-    @cached_property
-    def hvac_modes(self) -> list[climate.HVACMode]:
+    @property
+    def hvac_modes(self) -> list[climate.HVACMode]:  # pyright: ignore[reportIncompatibleVariableOverride]
         if self._allow_zone_hvac_mode_changes:
             return self._attr_hvac_modes
         # otherwises the Zone can either be off, or on in the current mode of the AC
@@ -424,30 +423,30 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
             _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode],
         ]
 
-    @cached_property
-    def current_temperature(self) -> float | None:
+    @property
+    def current_temperature(self) -> float | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._airtouch_zone.current_temperature
 
-    @cached_property
-    def target_temperature(self) -> float | None:
+    @property
+    def target_temperature(self) -> float | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._airtouch_zone.target_temperature
 
-    @cached_property
-    def max_temp(self) -> float:
+    @property
+    def max_temp(self) -> float:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._airtouch_ac.max_target_temperature
 
-    @cached_property
-    def min_temp(self) -> float:
+    @property
+    def min_temp(self) -> float:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._airtouch_ac.min_target_temperature
 
-    @cached_property
-    def fan_mode(self) -> str | None:
+    @property
+    def fan_mode(self) -> str | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         if self._airtouch_zone.power_state:
             return _ZONE_TO_CLIMATE_FAN_MODE[self._airtouch_zone.power_state]
         return None
 
-    @cached_property
-    def hvac_mode(self) -> climate.HVACMode | None:
+    @property
+    def hvac_mode(self) -> climate.HVACMode | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             return climate.HVACMode.OFF
 
@@ -460,8 +459,8 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
                     return _AC_TO_CLIMATE_HVAC_MODE[self._airtouch_ac.selected_mode]
         return None
 
-    @cached_property
-    def hvac_action(self) -> climate.HVACAction | None:
+    @property
+    def hvac_action(self) -> climate.HVACAction | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         if self._airtouch_zone.power_state == pyairtouch.ZonePowerState.OFF:
             return climate.HVACAction.OFF
 
@@ -476,8 +475,8 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
                     return _AC_TO_CLIMATE_HVAC_ACTION[self._airtouch_ac.active_mode]
         return None
 
-    @cached_property
-    def extra_state_attributes(self) -> Mapping[str, Any] | None:
+    @property
+    def extra_state_attributes(self) -> Mapping[str, Any] | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         # Add the control method as an attribute so that this can be seen in
         # Home Assistant. It's unlikely to change often but potentially useful
         # for automations.
