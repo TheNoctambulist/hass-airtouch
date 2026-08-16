@@ -39,6 +39,7 @@ async def async_setup_entry(
             timer_entity = AcQuickTimerEntity(
                 timer_type=timer_type,
                 ac_device=ac_device,
+                airtouch=airtouch,
                 airtouch_ac=airtouch_ac,
             )
             discovered_entities.append(timer_entity)
@@ -65,7 +66,7 @@ _TIMER_TYPE_NAME_MAPPING = {
 }
 
 
-class AcQuickTimerEntity(entities.AirTouchAcEntity, time.TimeEntity):
+class AcQuickTimerEntity(entities.AirTouchAcEntity, time.TimeEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Time entity for an AirTouch AC Quick Timer."""
 
     _attr_icon = "mdi:fan-clock"
@@ -74,10 +75,12 @@ class AcQuickTimerEntity(entities.AirTouchAcEntity, time.TimeEntity):
         self,
         timer_type: pyairtouch.AcTimerType,
         ac_device: devices.AcDevice,
+        airtouch: pyairtouch.AirTouch,
         airtouch_ac: pyairtouch.AirConditioner,
     ) -> None:
         super().__init__(
             ac_device=ac_device,
+            airtouch=airtouch,
             airtouch_ac=airtouch_ac,
             id_suffix="_" + timer_type.name.lower(),
         )

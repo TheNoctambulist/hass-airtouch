@@ -31,6 +31,10 @@ class AirTouchConsoleEntity(Entity):
         self._attr_unique_id = airtouch_device.unique_id + id_suffix
         self._attr_device_info = airtouch_device.device_info
 
+    @property
+    def available(self) -> bool:  # pyright: ignore[reportIncompatibleVariableOverride]
+        return self._airtouch.connected
+
     async def async_added_to_hass(self) -> None:
         self._airtouch.subscribe(self._async_on_airtouch_update)
 
@@ -63,18 +67,27 @@ class AirTouchAcEntity(Entity):
     def __init__(
         self,
         ac_device: devices.AcDevice,
+        airtouch: pyairtouch.AirTouch,
         airtouch_ac: pyairtouch.AirConditioner,
         *,
         id_suffix: str = "",
         include_zone_subscription: bool = False,
     ) -> None:
+        self._airtouch = airtouch
         self._airtouch_ac = airtouch_ac
         self._include_zone_subscription = include_zone_subscription
 
         self._attr_unique_id = ac_device.unique_id + id_suffix
         self._attr_device_info = ac_device.device_info
 
+    @property
+    def available(self) -> bool:  # pyright: ignore[reportIncompatibleVariableOverride]
+        return self._airtouch.connected
+
     async def async_added_to_hass(self) -> None:
+        # Subscribe to AirTouch for changes in connection state
+        self._airtouch.subscribe(self._async_on_airtouch_update)
+
         if self._include_zone_subscription:
             self._airtouch_ac.subscribe(self._async_on_ac_update)
         else:
@@ -85,6 +98,11 @@ class AirTouchAcEntity(Entity):
             self._airtouch_ac.unsubscribe(self._async_on_ac_update)
         else:
             self._airtouch_ac.unsubscribe_ac_state(self._async_on_ac_update)
+
+        self._airtouch.unsubscribe(self._async_on_airtouch_update)
+
+    async def _async_on_airtouch_update(self, _: str) -> None:
+        self.schedule_update_ha_state()
 
     async def _async_on_ac_update(self, _: int) -> None:
         self.schedule_update_ha_state()
@@ -112,19 +130,33 @@ class AirTouchZoneEntity(Entity):
     def __init__(
         self,
         zone_device: devices.ZoneDevice,
+        airtouch: pyairtouch.AirTouch,
         airtouch_zone: pyairtouch.Zone,
         id_suffix: str = "",
     ) -> None:
+        self._airtouch = airtouch
         self._airtouch_zone = airtouch_zone
 
         self._attr_unique_id = zone_device.unique_id + id_suffix
         self._attr_device_info = zone_device.device_info
 
+    @property
+    def available(self) -> bool:  # pyright: ignore[reportIncompatibleVariableOverride]
+        return self._airtouch.connected
+
     async def async_added_to_hass(self) -> None:
+        # Subscribe to AirTouch for changes in connection state
+        self._airtouch.subscribe(self._async_on_airtouch_update)
+
         self._airtouch_zone.subscribe(self._async_on_zone_update)
 
     async def async_will_remove_from_hass(self) -> None:
         self._airtouch_zone.unsubscribe(self._async_on_zone_update)
+
+        self._airtouch.unsubscribe(self._async_on_airtouch_update)
+
+    async def _async_on_airtouch_update(self, _: str) -> None:
+        self.schedule_update_ha_state()
 
     async def _async_on_zone_update(self, _: int) -> None:
         self.schedule_update_ha_state()

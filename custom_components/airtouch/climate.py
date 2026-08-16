@@ -48,6 +48,7 @@ async def async_setup_entry(
         ac_device = airtouch_device.ac_device(airtouch_ac)
         ac_entity = AcClimateEntity(
             ac_device=ac_device,
+            airtouch=airtouch,
             airtouch_ac=airtouch_ac,
             min_target_temperature_step=min_target_temperature_step,
         )
@@ -59,6 +60,7 @@ async def async_setup_entry(
             zone_device = ac_device.zone_device(airtouch_zone)
             zone_entity = ZoneClimateEntity(
                 zone_device_info=zone_device,
+                airtouch=airtouch,
                 airtouch_ac=airtouch_ac,
                 airtouch_zone=airtouch_zone,
                 min_target_temperature_step=min_target_temperature_step,
@@ -162,7 +164,7 @@ AC_TO_CLIMATE_FAN_MODE = {
 _CLIMATE_TO_AC_FAN_MODE = {value: key for key, value in AC_TO_CLIMATE_FAN_MODE.items()}
 
 
-class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
+class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """A climate entity for an AirTouch Air Conditioner."""
 
     _attr_name = None  # Name comes from the device info
@@ -178,11 +180,13 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):
     def __init__(
         self,
         ac_device: devices.AcDevice,
+        airtouch: pyairtouch.AirTouch,
         airtouch_ac: pyairtouch.AirConditioner,
         min_target_temperature_step: float,
     ) -> None:
         super().__init__(
             ac_device=ac_device,
+            airtouch=airtouch,
             airtouch_ac=airtouch_ac,
         )
 
@@ -350,7 +354,7 @@ _CLIMATE_TO_ZONE_FAN_MODE = {
 }
 
 
-class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
+class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """A climate entity for an AirTouch Zone."""
 
     _attr_name = None  # Name comes from the device info
@@ -359,9 +363,10 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
 
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         zone_device_info: devices.ZoneDevice,
+        airtouch: pyairtouch.AirTouch,
         airtouch_ac: pyairtouch.AirConditioner,
         airtouch_zone: pyairtouch.Zone,
         min_target_temperature_step: float,
@@ -370,6 +375,7 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):
     ) -> None:
         super().__init__(
             zone_device=zone_device_info,
+            airtouch=airtouch,
             airtouch_zone=airtouch_zone,
         )
         self._airtouch_ac = airtouch_ac

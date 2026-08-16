@@ -39,7 +39,7 @@ async def async_setup_entry(
     async_add_devices(discovered_entities)
 
 
-class AirtouchUpdateEntity(entities.AirTouchConsoleEntity, update.UpdateEntity):
+class AirtouchUpdateEntity(entities.AirTouchConsoleEntity, update.UpdateEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """An update entity for the AirTouch console software."""
 
     # Leaving the name unset results in a suffix of "None" instead of just being

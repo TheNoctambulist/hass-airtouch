@@ -50,6 +50,7 @@ async def async_setup_entry(
             ac_spill_entity = AcSpillBypassEntity(
                 spill_bypass=spill_bypass,
                 ac_device=ac_device,
+                airtouch=airtouch,
                 airtouch_ac=airtouch_ac,
             )
             discovered_entities.append(ac_spill_entity)
@@ -65,6 +66,7 @@ async def async_setup_entry(
             ):
                 zone_spill_entity = ZoneSpillEntity(
                     zone_device=zone_device,
+                    airtouch=airtouch,
                     airtouch_zone=airtouch_zone,
                 )
                 discovered_entities.append(zone_spill_entity)
@@ -72,6 +74,7 @@ async def async_setup_entry(
             if airtouch_zone.has_temp_sensor:
                 zone_battery_entity = ZoneBatteryEntity(
                     zone_device=zone_device,
+                    airtouch=airtouch,
                     airtouch_zone=airtouch_zone,
                 )
                 discovered_entities.append(zone_battery_entity)
@@ -80,7 +83,7 @@ async def async_setup_entry(
     async_add_devices(discovered_entities)
 
 
-class AcSpillBypassEntity(entities.AirTouchAcEntity, binary_sensor.BinarySensorEntity):
+class AcSpillBypassEntity(entities.AirTouchAcEntity, binary_sensor.BinarySensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Binary sensor reporting the spill/bypass state of an air-conditioner."""
 
     _attr_device_class = binary_sensor.BinarySensorDeviceClass.OPENING
@@ -89,10 +92,12 @@ class AcSpillBypassEntity(entities.AirTouchAcEntity, binary_sensor.BinarySensorE
         self,
         spill_bypass: SpillBypass,
         ac_device: devices.AcDevice,
+        airtouch: pyairtouch.AirTouch,
         airtouch_ac: pyairtouch.AirConditioner,
     ) -> None:
         super().__init__(
             ac_device=ac_device,
+            airtouch=airtouch,
             airtouch_ac=airtouch_ac,
             id_suffix="_bypass" if spill_bypass == SpillBypass.BYPASS else "_spill",
         )
@@ -103,17 +108,21 @@ class AcSpillBypassEntity(entities.AirTouchAcEntity, binary_sensor.BinarySensorE
         return self._airtouch_ac.spill_state != pyairtouch.AcSpillState.NONE
 
 
-class ZoneSpillEntity(entities.AirTouchZoneEntity, binary_sensor.BinarySensorEntity):
+class ZoneSpillEntity(entities.AirTouchZoneEntity, binary_sensor.BinarySensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Binary sensor reporting the spill state of a zone."""
 
     _attr_name = "Spill"
     _attr_device_class = binary_sensor.BinarySensorDeviceClass.OPENING
 
     def __init__(
-        self, zone_device: devices.ZoneDevice, airtouch_zone: pyairtouch.Zone
+        self,
+        zone_device: devices.ZoneDevice,
+        airtouch: pyairtouch.AirTouch,
+        airtouch_zone: pyairtouch.Zone,
     ) -> None:
         super().__init__(
             zone_device=zone_device,
+            airtouch=airtouch,
             airtouch_zone=airtouch_zone,
             id_suffix="_spill",
         )
@@ -123,17 +132,21 @@ class ZoneSpillEntity(entities.AirTouchZoneEntity, binary_sensor.BinarySensorEnt
         return self._airtouch_zone.spill_active
 
 
-class ZoneBatteryEntity(entities.AirTouchZoneEntity, binary_sensor.BinarySensorEntity):
+class ZoneBatteryEntity(entities.AirTouchZoneEntity, binary_sensor.BinarySensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Binary sensor reporting the battery level of a zone's temperature sensor."""
 
     _attr_name = "Battery"
     _attr_device_class = binary_sensor.BinarySensorDeviceClass.BATTERY
 
     def __init__(
-        self, zone_device: devices.ZoneDevice, airtouch_zone: pyairtouch.Zone
+        self,
+        zone_device: devices.ZoneDevice,
+        airtouch: pyairtouch.AirTouch,
+        airtouch_zone: pyairtouch.Zone,
     ) -> None:
         super().__init__(
             zone_device=zone_device,
+            airtouch=airtouch,
             airtouch_zone=airtouch_zone,
             id_suffix="_battery",
         )

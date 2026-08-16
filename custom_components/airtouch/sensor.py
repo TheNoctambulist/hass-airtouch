@@ -44,12 +44,14 @@ async def async_setup_entry(
         ac_device = airtouch_device.ac_device(airtouch_ac)
         ac_temperature_entity = AcTemperatureEntity(
             ac_device=ac_device,
+            airtouch=airtouch,
             airtouch_ac=airtouch_ac,
         )
         discovered_entities.append(ac_temperature_entity)
 
         ac_error_entity = AcErrorEntity(
             ac_device=ac_device,
+            airtouch=airtouch,
             airtouch_ac=airtouch_ac,
         )
         discovered_entities.append(ac_error_entity)
@@ -58,6 +60,7 @@ async def async_setup_entry(
         if pyairtouch.AcFanSpeed.INTELLIGENT_AUTO in airtouch_ac.supported_fan_speeds:
             ac_fan_speed_entity = AcActiveFanSpeedEntity(
                 ac_device=ac_device,
+                airtouch=airtouch,
                 airtouch_ac=airtouch_ac,
             )
             discovered_entities.append(ac_fan_speed_entity)
@@ -68,6 +71,7 @@ async def async_setup_entry(
             zone_device = ac_device.zone_device(airtouch_zone)
             zone_percentage_entity = ZonePercentageEntity(
                 zone_device=zone_device,
+                airtouch=airtouch,
                 airtouch_zone=airtouch_zone,
             )
             discovered_entities.append(zone_percentage_entity)
@@ -75,6 +79,7 @@ async def async_setup_entry(
             if airtouch_zone.has_temp_sensor:
                 zone_temperature_entity = ZoneTemperatureEntity(
                     zone_device=zone_device,
+                    airtouch=airtouch,
                     airtouch_zone=airtouch_zone,
                 )
                 discovered_entities.append(zone_temperature_entity)
@@ -95,6 +100,7 @@ async def async_setup_entry(
             ac_spill_bypass_percentage_entity = SpillBypassPercentageEntity(
                 spill_bypass=spill_bypass,
                 ac_device=ac_device,
+                airtouch=airtouch,
                 airtouch_ac=airtouch_ac,
                 spill_zone_count=spill_zone_count,
             )
@@ -104,7 +110,7 @@ async def async_setup_entry(
     async_add_devices(discovered_entities)
 
 
-class AcTemperatureEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
+class AcTemperatureEntity(entities.AirTouchAcEntity, sensor.SensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Sensor reporting the current temperature of an air-conditioner."""
 
     _attr_name = "Temperature"
@@ -113,10 +119,14 @@ class AcTemperatureEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
     _attr_state_class = sensor.SensorStateClass.MEASUREMENT
 
     def __init__(
-        self, ac_device: devices.AcDevice, airtouch_ac: pyairtouch.AirConditioner
+        self,
+        ac_device: devices.AcDevice,
+        airtouch: pyairtouch.AirTouch,
+        airtouch_ac: pyairtouch.AirConditioner,
     ) -> None:
         super().__init__(
             ac_device=ac_device,
+            airtouch=airtouch,
             airtouch_ac=airtouch_ac,
             id_suffix="_temperature",
         )
@@ -126,7 +136,7 @@ class AcTemperatureEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
         return self._airtouch_ac.current_temperature
 
 
-class AcActiveFanSpeedEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
+class AcActiveFanSpeedEntity(entities.AirTouchAcEntity, sensor.SensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Sensor reporting the active fan speed of an air-conditioner."""
 
     _attr_name = "Active Fan Speed"
@@ -134,10 +144,14 @@ class AcActiveFanSpeedEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
     _attr_translation_key = "ac_active_fan_speed"
 
     def __init__(
-        self, ac_device: devices.AcDevice, airtouch_ac: pyairtouch.AirConditioner
+        self,
+        ac_device: devices.AcDevice,
+        airtouch: pyairtouch.AirTouch,
+        airtouch_ac: pyairtouch.AirConditioner,
     ) -> None:
         super().__init__(
             ac_device=ac_device,
+            airtouch=airtouch,
             airtouch_ac=airtouch_ac,
             id_suffix="_active_fan_speed",
         )
@@ -153,7 +167,7 @@ class AcActiveFanSpeedEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
 _NO_ERROR = "none"
 
 
-class AcErrorEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
+class AcErrorEntity(entities.AirTouchAcEntity, sensor.SensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Sensor reporting the error state of an air-conditioner."""
 
     _attr_name = "Error Code"
@@ -161,10 +175,16 @@ class AcErrorEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
     _attr_translation_key = "ac_error_code"
 
     def __init__(
-        self, ac_device: devices.AcDevice, airtouch_ac: pyairtouch.AirConditioner
+        self,
+        ac_device: devices.AcDevice,
+        airtouch: pyairtouch.AirTouch,
+        airtouch_ac: pyairtouch.AirConditioner,
     ) -> None:
         super().__init__(
-            ac_device=ac_device, airtouch_ac=airtouch_ac, id_suffix="_error"
+            ac_device=ac_device,
+            airtouch=airtouch,
+            airtouch_ac=airtouch_ac,
+            id_suffix="_error",
         )
 
     @property
@@ -184,7 +204,7 @@ class AcErrorEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
         return {"error_description": error_description}
 
 
-class ZoneTemperatureEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
+class ZoneTemperatureEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Sensor reporting the current temperature of a zone."""
 
     _attr_name = "Temperature"
@@ -193,10 +213,14 @@ class ZoneTemperatureEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
     _attr_state_class = sensor.SensorStateClass.MEASUREMENT
 
     def __init__(
-        self, zone_device: devices.ZoneDevice, airtouch_zone: pyairtouch.Zone
+        self,
+        zone_device: devices.ZoneDevice,
+        airtouch: pyairtouch.AirTouch,
+        airtouch_zone: pyairtouch.Zone,
     ) -> None:
         super().__init__(
             zone_device=zone_device,
+            airtouch=airtouch,
             airtouch_zone=airtouch_zone,
             id_suffix="_temperature",
         )
@@ -206,7 +230,7 @@ class ZoneTemperatureEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
         return self._airtouch_zone.current_temperature
 
 
-class ZonePercentageEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
+class ZonePercentageEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Sensor reporting the current open percentage of a zone's damper."""
 
     _attr_name = "Damper Open Percentage"
@@ -215,10 +239,14 @@ class ZonePercentageEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
     _attr_state_class = sensor.SensorStateClass.MEASUREMENT
 
     def __init__(
-        self, zone_device: devices.ZoneDevice, airtouch_zone: pyairtouch.Zone
+        self,
+        zone_device: devices.ZoneDevice,
+        airtouch: pyairtouch.AirTouch,
+        airtouch_zone: pyairtouch.Zone,
     ) -> None:
         super().__init__(
             zone_device=zone_device,
+            airtouch=airtouch,
             airtouch_zone=airtouch_zone,
             id_suffix="_open_percentage",
         )
@@ -232,7 +260,7 @@ class ZonePercentageEntity(entities.AirTouchZoneEntity, sensor.SensorEntity):
         return self._airtouch_zone.current_damper_percentage
 
 
-class SpillBypassPercentageEntity(entities.AirTouchAcEntity, sensor.SensorEntity):
+class SpillBypassPercentageEntity(entities.AirTouchAcEntity, sensor.SensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Sensor reporting the current spill/bypass percentage for an AC.
 
     The value may be greater than 100% for ACs with multiple spill zones.
@@ -246,11 +274,13 @@ class SpillBypassPercentageEntity(entities.AirTouchAcEntity, sensor.SensorEntity
         self,
         spill_bypass: SpillBypass,
         ac_device: devices.AcDevice,
+        airtouch: pyairtouch.AirTouch,
         airtouch_ac: pyairtouch.AirConditioner,
         spill_zone_count: int,
     ) -> None:
         super().__init__(
             ac_device=ac_device,
+            airtouch=airtouch,
             airtouch_ac=airtouch_ac,
             id_suffix=(
                 "_bypass_percentage"

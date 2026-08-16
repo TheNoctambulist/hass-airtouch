@@ -43,6 +43,7 @@ async def async_setup_entry(
             zone_device = ac_device.zone_device(airtouch_zone)
             zone_entity = ZoneDamperEntity(
                 zone_device=zone_device,
+                airtouch=airtouch,
                 airtouch_zone=airtouch_zone,
             )
             discovered_entities.append(zone_entity)
@@ -51,7 +52,7 @@ async def async_setup_entry(
     async_add_devices(discovered_entities)
 
 
-class ZoneDamperEntity(entities.AirTouchZoneEntity, cover.CoverEntity):
+class ZoneDamperEntity(entities.AirTouchZoneEntity, cover.CoverEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Cover entity for an AirTouch zone's damper."""
 
     _attr_name = "Damper"
@@ -63,12 +64,16 @@ class ZoneDamperEntity(entities.AirTouchZoneEntity, cover.CoverEntity):
     )
 
     def __init__(
-        self, zone_device: devices.ZoneDevice, airtouch_zone: pyairtouch.Zone
+        self,
+        zone_device: devices.ZoneDevice,
+        airtouch: pyairtouch.AirTouch,
+        airtouch_zone: pyairtouch.Zone,
     ) -> None:
         # The climate entity is considered main entity, so the damper entity
         # uses an id_suffix.
         super().__init__(
             zone_device=zone_device,
+            airtouch=airtouch,
             airtouch_zone=airtouch_zone,
             id_suffix="_damper",
         )
