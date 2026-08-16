@@ -2,7 +2,7 @@
   "config": {
     "error": {
       "already_configured": "Already configured. Enter a new host name or IP address.",
-      "no_devices_found": "Failed to connect to AirTouch console. Check the address and try again."
+      "no_devices_found": "Failed to connect to AirTouch console. Check the address, select an AirTouch model, and try again."
     },
     "step": {
       "finalise": {
