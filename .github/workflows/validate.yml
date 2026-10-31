@@ -18,7 +18,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout the repository"
-        uses: "actions/checkout@v4"
+        uses: "actions/checkout@v7"
 
       - name: "Run hassfest validation"
         uses: "home-assistant/actions/hassfest@master"
@@ -28,7 +28,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout the repository"
-        uses: "actions/checkout@v4"
+        uses: "actions/checkout@v7"
 
       - name: "Run HACS validation"
         uses: "hacs/action@main"
@@ -41,11 +41,11 @@ jobs:
       runs-on: "ubuntu-latest"
       steps:
         - name: "Checkout the repository"
-          uses: "actions/checkout@v4"
+          uses: "actions/checkout@v7"
         - name: Set up PDM
           uses: pdm-project/setup-pdm@v4
           with:
-            python-version: 3.13
+            python-version: 3.14
             cache: true
         - name: "Assert versions"
           run: |
