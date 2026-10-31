@@ -8,6 +8,9 @@
   "documentation": "https://github.com/TheNoctambulist/hass-airtouch",
   "integration_type": "hub",
   "iot_class": "local_push",
+  "categories": [
+    "climate.heat_pumps_air_conditioning"
+  ],
   "issue_tracker": "https://github.com/TheNoctambulist/hass-airtouch/issues",
   "loggers": [
     "custom_components.airtouch",
