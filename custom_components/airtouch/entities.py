@@ -1,11 +1,13 @@
 """Provides mix-ins for common entity logic."""
 
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
-import pyairtouch
 from homeassistant.helpers.entity import Entity
 
-from . import devices
+if TYPE_CHECKING:
+    import pyairtouch
+
+    from . import devices
 
 
 class AirTouchConsoleEntity(Entity):

@@ -4,19 +4,23 @@ Time entities are used to represent:
 - The on/off quick timers for each AC.
 """
 
-import datetime
 import logging
+from typing import TYPE_CHECKING
 
+import probatio
 import pyairtouch
-import voluptuous
 from homeassistant.components import time
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation, entity_platform
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import devices, entities
 from .const import DOMAIN
+
+if TYPE_CHECKING:
+    import datetime as dt
+
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -55,7 +59,7 @@ async def async_setup_entry(
     )
     platform.async_register_entity_service(
         name="set_timer_from_delay",
-        schema={voluptuous.Required("delay"): config_validation.positive_time_period},
+        schema={probatio.Required("delay"): config_validation.positive_time_period},
         func="async_set_timer_from_delay",
     )
 
@@ -88,13 +92,13 @@ class AcQuickTimerEntity(entities.AirTouchAcEntity, time.TimeEntity):  # pyright
         self._attr_name = _TIMER_TYPE_NAME_MAPPING[timer_type]
 
     @property
-    def native_value(self) -> datetime.time | None:  # pyright: ignore[reportIncompatibleVariableOverride]
+    def native_value(self) -> dt.time | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._airtouch_ac.next_quick_timer(self._timer_type)
 
-    async def async_set_value(self, value: datetime.time) -> None:
+    async def async_set_value(self, value: dt.time) -> None:
         await self._airtouch_ac.set_quick_timer(self._timer_type, value)
 
-    async def async_set_timer_from_delay(self, delay: datetime.timedelta) -> None:
+    async def async_set_timer_from_delay(self, delay: dt.timedelta) -> None:
         await self._airtouch_ac.set_quick_timer(self._timer_type, delay)
 
     async def async_clear_timer(self) -> None:

@@ -5,15 +5,18 @@ console.
 """
 
 import logging
+from typing import TYPE_CHECKING
 
-import pyairtouch
 from homeassistant.components import update
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import devices, entities
 from .const import DOMAIN
+
+if TYPE_CHECKING:
+    import pyairtouch
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 _LOGGER = logging.getLogger(__name__)
 

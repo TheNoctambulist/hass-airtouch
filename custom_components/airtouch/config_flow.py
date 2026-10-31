@@ -2,8 +2,8 @@
 
 from typing import Any, override
 
+import probatio
 import pyairtouch
-import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import (
     CONF_HOST,
@@ -44,17 +44,16 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
+    @override
     def async_get_options_flow(
         config_entry: config_entries.ConfigEntry,
     ) -> config_entries.OptionsFlow:
-        return AirTouchOptionsFlow(config_entry)
+        return AirTouchOptionsFlow()
 
-    # Compatibility: Before 2024.4:
-    # Return type is quoted for type checking only since it is new in 2024.4.
     @override
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
-    ) -> "config_entries.ConfigFlowResult":
+    ) -> config_entries.ConfigFlowResult:
         """Handle a flow initialised by the user."""
         return await self.async_step_discover_airtouch()
 
@@ -62,7 +61,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self,
         remote_host: str | None = None,
         airtouch_model: AirTouchModel = AirTouchModel.AUTO_DISCOVER,
-    ) -> "config_entries.ConfigFlowResult":
+    ) -> config_entries.ConfigFlowResult:
         """Attempt to discover AirTouch devices on the network.
 
         Attempts to perform discovery of AirTouch devices. If no remote host is
@@ -82,7 +81,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             airtouch_model: optional model of the AirTouch to skip the discovery step.
         """
         # Save the current remote host as context for other steps
-        self.context[CONF_HOST] = remote_host  # type: ignore[literal-required]
+        self.context[CONF_HOST] = remote_host  # type: ignore[typeddict-unknown-key]
         self.context[CONF_AIRTOUCH_MODEL] = airtouch_model  # type: ignore[literal-required]
 
         discovered_airtouches: list[pyairtouch.AirTouch] = []
@@ -132,17 +131,17 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self,
         info: dict[str, Any] | None = None,
         errors: dict[str, str] | None = None,
-    ) -> "config_entries.ConfigFlowResult":
+    ) -> config_entries.ConfigFlowResult:
         if not info or errors:
             return self.async_show_form(
                 step_id="user_host",
-                data_schema=vol.Schema(
+                data_schema=probatio.Schema(
                     schema={
-                        vol.Required(
+                        probatio.Required(
                             CONF_HOST,
                             default=self.context.get(CONF_HOST),
                         ): str,
-                        vol.Required(
+                        probatio.Required(
                             CONF_AIRTOUCH_MODEL,
                             default=self.context.get(
                                 CONF_AIRTOUCH_MODEL, AirTouchModel.AUTO_DISCOVER.value
@@ -167,19 +166,19 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_settings(
         self,
         info: dict[str, Any] | None = None,
-    ) -> "config_entries.ConfigFlowResult":
+    ) -> config_entries.ConfigFlowResult:
         if not info:
             return self.async_show_form(
                 step_id="settings",
                 description_placeholders={
                     "airtouch_name": self.context[_CONTEXT_TITLE],  # type: ignore[literal-required]
                 },
-                data_schema=vol.Schema(
+                data_schema=probatio.Schema(
                     schema={
-                        vol.Required(
+                        probatio.Required(
                             OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES, default=False
                         ): bool,
-                        vol.Required(
+                        probatio.Required(
                             CONF_SPILL_BYPASS, default=SpillBypass.SPILL.value
                         ): selector.SelectSelector(
                             selector.SelectSelectorConfig(
@@ -201,7 +200,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_spill_zones(
         self,
         info: dict[str, Any] | None = None,
-    ) -> "config_entries.ConfigFlowResult":
+    ) -> config_entries.ConfigFlowResult:
         spill_bypass = self.context[CONF_SPILL_BYPASS]  # type: ignore[literal-required]
         if spill_bypass == SpillBypass.BYPASS:
             info = {CONF_SPILL_ZONES: []}
@@ -225,9 +224,9 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             return self.async_show_form(
                 step_id="spill_zones",
-                data_schema=vol.Schema(
+                data_schema=probatio.Schema(
                     schema={
-                        vol.Required(CONF_SPILL_ZONES): selector.SelectSelector(
+                        probatio.Required(CONF_SPILL_ZONES): selector.SelectSelector(
                             selector.SelectSelectorConfig(
                                 options=zone_options,
                                 multiple=True,
@@ -244,7 +243,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_finalise(
         self, info: dict[str, Any] | None = None
-    ) -> "config_entries.ConfigFlowResult":
+    ) -> config_entries.ConfigFlowResult:
         if info is None and self.context[_CONTEXT_REMAINING_AIRTOUCHES]:  # type: ignore[literal-required]
             # Show an empty form just so that we can put a title and description
             # to notify the user that additional AirTouches have been
@@ -256,7 +255,7 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_create_entry(
             title=self.context[_CONTEXT_TITLE],  # type: ignore[literal-required]
             data={
-                CONF_HOST: self.context[CONF_HOST],  # type: ignore[literal-required]
+                CONF_HOST: self.context[CONF_HOST],  # type: ignore[typeddict-item]
                 CONF_AIRTOUCH_MODEL: self.context[CONF_AIRTOUCH_MODEL],  # type: ignore[literal-required]
                 CONF_SPILL_BYPASS: self.context[CONF_SPILL_BYPASS],  # type: ignore[literal-required]
                 CONF_SPILL_ZONES: self.context[CONF_SPILL_ZONES],  # type: ignore[literal-required]
@@ -290,17 +289,6 @@ class AirTouchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 class AirTouchOptionsFlow(config_entries.OptionsFlow):
     """Configures changeable options for the AirTouch integration."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Initialise the options flow."""
-        # Compatibility: Before 2024.12
-        # The config_entry constructor parameter can be removed once this
-        # backwards compatibility support is removed.
-        # Needs to use `dir` because `hasattr` invokes the propery and triggers an
-        # exception due to self.config_entry not being permitted for use within
-        # the initialiser.
-        if "config_entry" not in dir(self):
-            self.config_entry = config_entry
-
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> config_entries.ConfigFlowResult:
@@ -316,16 +304,16 @@ class AirTouchOptionsFlow(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema(
+            data_schema=probatio.Schema(
                 {
-                    vol.Required(
+                    probatio.Required(
                         schema=OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES,
                         default=self.config_entry.options.get(
                             OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES,
                             OPTIONS_ALLOW_ZONE_HVAC_MODE_CHANGES_DEFAULT,
                         ),
                     ): bool,
-                    vol.Required(
+                    probatio.Required(
                         OPTIONS_MIN_TARGET_TEMPERATURE_STEP,
                         default=_format_precision(
                             self.config_entry.options.get(

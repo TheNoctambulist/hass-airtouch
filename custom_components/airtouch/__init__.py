@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import inspect
 import logging
 from typing import TYPE_CHECKING
 
@@ -109,8 +108,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Migrate previous versions of configuration."""
     entry_version = entry.version
-    # Use getattr for backwards compatibility before Home Assistant 2024.1
-    entry_minor_version = getattr(entry, "minor_version", 0)
+    entry_minor_version = entry.minor_version
     _LOGGER.debug(
         "Migrating config from schema v%s.%s",
         entry_version,
@@ -146,22 +144,12 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # No migration actions required at the moment.
     # Just update the config entry version to the latest.
-    update_signature = inspect.signature(hass.config_entries.async_update_entry)
-    if "version" in update_signature.parameters:
-        # Compatibility: 2024.3 onwards
-        hass.config_entries.async_update_entry(
-            entry,
-            version=CONF_VERSION,
-            minor_version=CONF_MINOR_VERSION,
-            data=config_data,
-        )
-    else:
-        # Compatibility: Before 2024.3
-        entry.version = CONF_VERSION
-        if hasattr(entry, "minor_version"):
-            # Compatibility: For 2024.1 and 2024.2
-            entry.minor_version = CONF_MINOR_VERSION
-        hass.config_entries.async_update_entry(entry, data=config_data)
+    hass.config_entries.async_update_entry(
+        entry,
+        version=CONF_VERSION,
+        minor_version=CONF_MINOR_VERSION,
+        data=config_data,
+    )
 
     _LOGGER.debug(
         "Successfully migrated config to schema v%s.%s",

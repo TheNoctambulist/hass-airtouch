@@ -7,15 +7,19 @@ Binary sensors are used to represent:
 """
 
 import logging
+from typing import TYPE_CHECKING
 
+import homeassistant.components.binary_sensor.const as binary_sensor_const
 import pyairtouch
 from homeassistant.components import binary_sensor
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import devices, entities
 from .const import CONF_SPILL_BYPASS, CONF_SPILL_ZONES, DOMAIN, SpillBypass
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -86,7 +90,7 @@ async def async_setup_entry(
 class AcSpillBypassEntity(entities.AirTouchAcEntity, binary_sensor.BinarySensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Binary sensor reporting the spill/bypass state of an air-conditioner."""
 
-    _attr_device_class = binary_sensor.BinarySensorDeviceClass.OPENING
+    _attr_device_class = binary_sensor_const.BinarySensorDeviceClass.OPENING
 
     def __init__(
         self,
@@ -112,7 +116,7 @@ class ZoneSpillEntity(entities.AirTouchZoneEntity, binary_sensor.BinarySensorEnt
     """Binary sensor reporting the spill state of a zone."""
 
     _attr_name = "Spill"
-    _attr_device_class = binary_sensor.BinarySensorDeviceClass.OPENING
+    _attr_device_class = binary_sensor_const.BinarySensorDeviceClass.OPENING
 
     def __init__(
         self,
@@ -136,7 +140,7 @@ class ZoneBatteryEntity(entities.AirTouchZoneEntity, binary_sensor.BinarySensorE
     """Binary sensor reporting the battery level of a zone's temperature sensor."""
 
     _attr_name = "Battery"
-    _attr_device_class = binary_sensor.BinarySensorDeviceClass.BATTERY
+    _attr_device_class = binary_sensor_const.BinarySensorDeviceClass.BATTERY
 
     def __init__(
         self,
