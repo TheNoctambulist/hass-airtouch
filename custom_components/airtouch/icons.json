@@ -22,6 +22,14 @@
           }
         }
       }
+    },
+    "switch": {
+      "zone_turbo": {
+        "default": "mdi:fan-plus",
+        "state": {
+          "off": "mdi:fan"
+        }
+      }
     }
   },
   "services": {

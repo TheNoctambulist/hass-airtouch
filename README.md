@@ -182,6 +182,25 @@ First add a thermostat card for the air-conditioner entity, then open the HVAC C
  --------|-|--------|-|--------
 ![](./images/thermostat-card-1.png) | ![][right-arrow]| ![](./images/thermostat-card-2.png) | ![][right-arrow] | ![](./images/thermostat-card-3.png)
 
+### :zap: Switch: Zone Turbo (`switch.<zone_name>_turbo`)
+A [**switch**][hass-switch] entity is created for each zone that supports turbo.
+Turbo support is configured per zone on the AirTouch console, so the switch will only appear for zones where the AirTouch app also offers turbo.
+
+The switch is particularly useful for zones without a temperature sensor, since those zones have no climate entity and therefore no `turbo` fan mode.
+
+Turbo is an "on" state for the zone: turning the switch on sets the zone to turbo, and turning it off returns the zone to the normal on state. The switch never turns the zone off.
+
+<details>
+<summary>States and Attributes</summary>
+
+#### States
+ State  | Description
+--------|-------------
+ `on`   | The zone is currently in turbo.
+ `off`  | The zone is on (without turbo) or off.
+
+</details>
+
 ### :thermometer: Sensor: Temperature (`sensor.<name>_temperature`)
 A temperature [**sensor**][hass-sensor] is created for the main AC and each zone with a temperature sensor.
 Dedicated temperature sensors make it easy to use the current temperature in automations or view the temperature value over time in the Home Assistant history view.
@@ -410,6 +429,7 @@ If you would like to make a donation as appreciation of my work:
 [hass-cover]: https://www.home-assistant.io/integrations/cover/
 [hass-customizing-entities]: https://www.home-assistant.io/docs/configuration/customizing-devices/
 [hass-sensor]: https://www.home-assistant.io/integrations/sensor/
+[hass-switch]: https://www.home-assistant.io/integrations/switch/
 [hass-time]: https://www.home-assistant.io/integrations/time/
 [hass-update]: https://www.home-assistant.io/integrations/update/
 [license-shield]: https://img.shields.io/github/license/thenoctambulist/hass-airtouch.svg
