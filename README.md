@@ -182,13 +182,13 @@ First add a thermostat card for the air-conditioner entity, then open the HVAC C
  --------|-|--------|-|--------
 ![](./images/thermostat-card-1.png) | ![][right-arrow]| ![](./images/thermostat-card-2.png) | ![][right-arrow] | ![](./images/thermostat-card-3.png)
 
-### :zap: Switch: Zone Turbo (`switch.<zone_name>_turbo`)
+### :dash: Switch: Zone Turbo (`switch.<zone_name>_turbo`)
 A [**switch**][hass-switch] entity is created for each zone that supports turbo.
-Turbo support is configured per zone on the AirTouch console, so the switch will only appear for zones where the AirTouch app also offers turbo.
 
-The switch is particularly useful for zones without a temperature sensor, since those zones have no climate entity and therefore no `turbo` fan mode.
+The switch entity can be used to set any zone into turbo mode, including zones that don't have a temperature sensor (and therefore no climate entity to set `turbo` fan mode).
 
-Turbo is an "on" state for the zone: turning the switch on sets the zone to turbo, and turning it off returns the zone to the normal on state. The switch never turns the zone off.
+Turning turbo off for a zone returns the zone to the normal on state.
+Turning off the switch will not turn off the zone.
 
 <details>
 <summary>States and Attributes</summary>

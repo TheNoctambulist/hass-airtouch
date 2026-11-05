@@ -37,19 +37,14 @@ async def async_setup_entry(
         for airtouch_zone in airtouch_ac.zones:
             # Turbo is only available for zones that have been configured to
             # support it on the AirTouch console.
-            if (
-                pyairtouch.ZonePowerState.TURBO
-                not in airtouch_zone.supported_power_states
-            ):
-                continue
-
-            zone_device = ac_device.zone_device(airtouch_zone)
-            zone_turbo_entity = ZoneTurboEntity(
-                zone_device=zone_device,
-                airtouch=airtouch,
-                airtouch_zone=airtouch_zone,
-            )
-            discovered_entities.append(zone_turbo_entity)
+            if pyairtouch.ZonePowerState.TURBO in airtouch_zone.supported_power_states:
+                zone_device = ac_device.zone_device(airtouch_zone)
+                zone_turbo_entity = ZoneTurboEntity(
+                    zone_device=zone_device,
+                    airtouch=airtouch,
+                    airtouch_zone=airtouch_zone,
+                )
+                discovered_entities.append(zone_turbo_entity)
 
     _LOGGER.debug("Found entities %s", discovered_entities)
     async_add_devices(discovered_entities)
