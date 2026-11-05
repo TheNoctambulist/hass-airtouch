@@ -182,6 +182,25 @@ First add a thermostat card for the air-conditioner entity, then open the HVAC C
  --------|-|--------|-|--------
 ![](./images/thermostat-card-1.png) | ![][right-arrow]| ![](./images/thermostat-card-2.png) | ![][right-arrow] | ![](./images/thermostat-card-3.png)
 
+### :dash: Switch: Zone Turbo (`switch.<zone_name>_turbo`)
+A [**switch**][hass-switch] entity is created for each zone that supports turbo.
+
+The switch entity can be used to set any zone into turbo mode, including zones that don't have a temperature sensor (and therefore no climate entity to set `turbo` fan mode).
+
+Turning turbo off for a zone returns the zone to the normal on state.
+Turning off the switch will not turn off the zone.
+
+<details>
+<summary>States and Attributes</summary>
+
+#### States
+ State  | Description
+--------|-------------
+ `on`   | The zone is currently in turbo.
+ `off`  | The zone is on (without turbo) or off.
+
+</details>
+
 ### :thermometer: Sensor: Temperature (`sensor.<name>_temperature`)
 A temperature [**sensor**][hass-sensor] is created for the main AC and each zone with a temperature sensor.
 Dedicated temperature sensors make it easy to use the current temperature in automations or view the temperature value over time in the Home Assistant history view.
@@ -410,6 +429,7 @@ If you would like to make a donation as appreciation of my work:
 [hass-cover]: https://www.home-assistant.io/integrations/cover/
 [hass-customizing-entities]: https://www.home-assistant.io/docs/configuration/customizing-devices/
 [hass-sensor]: https://www.home-assistant.io/integrations/sensor/
+[hass-switch]: https://www.home-assistant.io/integrations/switch/
 [hass-time]: https://www.home-assistant.io/integrations/time/
 [hass-update]: https://www.home-assistant.io/integrations/update/
 [license-shield]: https://img.shields.io/github/license/thenoctambulist/hass-airtouch.svg
