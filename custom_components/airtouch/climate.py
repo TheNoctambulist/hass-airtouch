@@ -180,7 +180,9 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):  # pyri
     # (e.g. in services.yaml)
     _attr_device_class = "ac"
 
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
+    # Backwards compatibility <2026.11
+    _attr_temperature_unit = UnitOfTemperature.CELSIUS  # type: ignore[misc]
 
     def __init__(
         self,
@@ -223,11 +225,21 @@ class AcClimateEntity(entities.AirTouchAcEntity, climate.ClimateEntity):  # pyri
         ]
 
     @property
-    def current_temperature(self) -> float | None:  # pyright: ignore[reportIncompatibleVariableOverride]
+    def native_current_temperature(self) -> float | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._airtouch_ac.current_temperature
 
     @property
-    def target_temperature(self) -> float | None:  # pyright: ignore[reportIncompatibleVariableOverride]
+    def native_target_temperature(self) -> float | None:  # pyright: ignore[reportIncompatibleVariableOverride]
+        return self._airtouch_ac.target_temperature
+
+    # Backwards compatibility <2026.11
+    @property  # type: ignore[misc]
+    def current_temperature(self) -> float | None:
+        return self._airtouch_ac.current_temperature
+
+    # Backwards compatibility <2026.11
+    @property  # type: ignore[misc]
+    def target_temperature(self) -> float | None:
         return self._airtouch_ac.target_temperature
 
     @property
@@ -361,7 +373,9 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):  # 
     _attr_translation_key = "zone_climate"
     _attr_device_class = "zone"
 
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
+    # Backwards compatibility <2026.11
+    _attr_temperature_unit = UnitOfTemperature.CELSIUS  # type: ignore[misc]
 
     def __init__(  # noqa: PLR0913
         self,
@@ -424,11 +438,21 @@ class ZoneClimateEntity(entities.AirTouchZoneEntity, climate.ClimateEntity):  # 
         ]
 
     @property
-    def current_temperature(self) -> float | None:  # pyright: ignore[reportIncompatibleVariableOverride]
+    def native_current_temperature(self) -> float | None:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._airtouch_zone.current_temperature
 
     @property
-    def target_temperature(self) -> float | None:  # pyright: ignore[reportIncompatibleVariableOverride]
+    def native_target_temperature(self) -> float | None:  # pyright: ignore[reportIncompatibleVariableOverride]
+        return self._airtouch_zone.target_temperature
+
+    # Backwards compatibility <2026.11
+    @property  # type: ignore[misc]
+    def current_temperature(self) -> float | None:
+        return self._airtouch_zone.current_temperature
+
+    # Backwards compatibility <2026.11
+    @property  # type: ignore[misc]
+    def target_temperature(self) -> float | None:
         return self._airtouch_zone.target_temperature
 
     @property
